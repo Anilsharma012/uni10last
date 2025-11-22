@@ -273,6 +273,7 @@ const CheckoutPayment = () => {
         try {
           const raw = localStorage.getItem('uni_orders_v1');
           const arr = raw ? (JSON.parse(raw) as any[]) : [];
+          const totalWithShipping = total + shippingCharges;
           const order = {
             _id: newOrderId,
             name: customerDetails.name,
@@ -282,7 +283,8 @@ const CheckoutPayment = () => {
             city: customerDetails.city,
             state: customerDetails.state,
             pincode: customerDetails.pincode,
-            total,
+            landmark: customerDetails.landmark,
+            total: totalWithShipping,
             paymentMethod: 'COD',
             status: 'pending',
             createdAt: new Date().toISOString(),
