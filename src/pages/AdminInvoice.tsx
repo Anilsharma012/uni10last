@@ -167,15 +167,21 @@ export default function AdminInvoice() {
                       <tr key={idx} className="border-b last:border-0">
                         <td className="py-2">
                           <div className="flex items-center gap-3">
-                            <img src={it.image || '/placeholder.svg'} className="w-10 h-10 object-cover rounded" />
-                            <div>
-                              <div className="font-medium">{it.title}</div>
-                              <div className="text-xs text-muted-foreground space-y-0.5">
+                            <img src={it.image || '/placeholder.svg'} alt={it.title} className="w-12 h-12 object-cover rounded" />
+                            <div className="flex-1">
+                              <div className="font-semibold text-gray-900">{it.title}</div>
+                              <div className="text-xs text-gray-600 space-y-1 mt-1">
                                 {(it.variant?.size || it.size) && (
-                                  <div>Size: {it.variant?.size || it.size}</div>
+                                  <div className="flex gap-2">
+                                    <span className="font-medium">Size:</span>
+                                    <span className="text-gray-700">{it.variant?.size || it.size}</span>
+                                  </div>
                                 )}
                                 {(it.variant?.color || it.color) && (
-                                  <div>Color: {it.variant?.color || it.color}</div>
+                                  <div className="flex gap-2">
+                                    <span className="font-medium">Color:</span>
+                                    <span className="text-gray-700 capitalize">{it.variant?.color || it.color}</span>
+                                  </div>
                                 )}
                               </div>
                             </div>
