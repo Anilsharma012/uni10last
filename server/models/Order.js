@@ -8,6 +8,7 @@ const OrderItemSchema = new mongoose.Schema({
   image: String,
   variant: Object,
   size: String,
+  color: String,
   productId: String,
 });
 
