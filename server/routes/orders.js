@@ -96,6 +96,7 @@ router.post('/', authOptional, async (req, res) => {
       name,
       phone,
       address,
+      streetAddress,
       paymentMethod,
       city,
       state,
