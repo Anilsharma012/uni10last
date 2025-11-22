@@ -2446,22 +2446,71 @@ const handleProductSubmit = async (e: React.FormEvent) => {
               </div>
               <div>
                 <Label htmlFor="colors">Available Colors</Label>
-                <Input
-                  id="colors"
-                  placeholder="e.g., Black, White, Red"
-                  value={productForm.colors.join(', ')}
-                  onChange={(e) =>
-                    setProductForm((p) => ({
-                      ...p,
-                      colors: e.target.value
-                        .split(',')
-                        .map((c) => c.trim())
-                        .filter(Boolean),
-                    }))
-                  }
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Type color names separated by commas.
+                <div className="flex gap-2 mt-2 mb-3">
+                  <Input
+                    id="colors"
+                    placeholder="e.g., Black, White, Red"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const colorInput = (e.target as HTMLInputElement).value.trim();
+                        if (colorInput && !productForm.colors.includes(colorInput)) {
+                          setProductForm((p) => ({
+                            ...p,
+                            colors: [...p.colors, colorInput],
+                          }));
+                          (e.target as HTMLInputElement).value = '';
+                        }
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const input = document.getElementById('colors') as HTMLInputElement;
+                      const colorInput = input?.value.trim();
+                      if (colorInput && !productForm.colors.includes(colorInput)) {
+                        setProductForm((p) => ({
+                          ...p,
+                          colors: [...p.colors, colorInput],
+                        }));
+                        input.value = '';
+                      }
+                    }}
+                  >
+                    <Plus className="h-4 w-4" /> Add
+                  </Button>
+                </div>
+                {productForm.colors.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {productForm.colors.map((color) => (
+                      <div
+                        key={color}
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full border bg-secondary"
+                      >
+                        <span className="text-sm">{color}</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-4 w-4 p-0 hover:bg-destructive/10"
+                          onClick={() => {
+                            setProductForm((p) => ({
+                              ...p,
+                              colors: p.colors.filter((c) => c !== color),
+                            }));
+                          }}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground mt-2">
+                  {productForm.colors.length === 0 ? 'Add color options by typing and clicking Add or pressing Enter.' : `${productForm.colors.length} color(s) added`}
                 </p>
               </div>
 
