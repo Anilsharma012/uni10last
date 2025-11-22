@@ -151,6 +151,18 @@ const CheckoutPayment = () => {
     }
   }, [customerDetails.pincode]);
 
+  // Save customer details to localStorage
+  useEffect(() => {
+    localStorage.setItem('userName', customerDetails.name);
+    localStorage.setItem('userPhone', customerDetails.phone);
+    localStorage.setItem('userAddress', customerDetails.address);
+    localStorage.setItem('userStreetAddress', customerDetails.streetAddress);
+    localStorage.setItem('userCity', customerDetails.city);
+    localStorage.setItem('userState', customerDetails.state);
+    localStorage.setItem('userPincode', customerDetails.pincode);
+    localStorage.setItem('userLandmark', customerDetails.landmark);
+  }, [customerDetails]);
+
   const fetchPaymentSettings = async () => {
     try {
       setLoadingSettings(true);
