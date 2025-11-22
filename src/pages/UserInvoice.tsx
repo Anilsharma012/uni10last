@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/lib/api';
 
-interface InvoiceOrderItem { title: string; image?: string; qty: number; price: number; variant?: { size?: string } | null }
+interface InvoiceOrderItem { title: string; image?: string; qty: number; price: number; variant?: { size?: string; color?: string } | null; color?: string; size?: string }
 interface InvoiceOrder {
   _id?: string;
   id?: string;
@@ -19,6 +19,7 @@ interface InvoiceOrder {
   name?: string;
   phone?: string;
   address?: string;
+  streetAddress?: string;
   city?: string;
   state?: string;
   pincode?: string;
@@ -80,6 +81,7 @@ export default function UserInvoice() {
     name: order.name,
     phone: order.phone,
     address1: order.address,
+    address2: order.streetAddress,
     city: order.city,
     state: order.state,
     pincode: order.pincode,
@@ -134,7 +136,8 @@ export default function UserInvoice() {
                 <h3 className="font-semibold mb-2">Ship To</h3>
                 <div className="rounded border p-3 text-sm">
                   <p className="font-medium">{ship?.name}</p>
-                  <p className="text-muted-foreground whitespace-pre-line">{ship?.address1}</p>
+                  <p className="text-muted-foreground">{ship?.address1}</p>
+                  {ship?.address2 && <p className="text-muted-foreground">{ship.address2}</p>}
                   <p className="text-muted-foreground">{ship?.city}, {ship?.state} {ship?.pincode}</p>
                   <p>{ship?.phone}</p>
                 </div>
@@ -160,9 +163,14 @@ export default function UserInvoice() {
                             <img src={it.image || '/placeholder.svg'} className="w-10 h-10 object-cover rounded" />
                             <div>
                               <div className="font-medium">{it.title}</div>
-                              {it.variant?.size && (
-                                <div className="text-xs text-muted-foreground">Size: {it.variant.size}</div>
-                              )}
+                              <div className="text-xs text-muted-foreground space-y-0.5">
+                                {(it.variant?.size || it.size) && (
+                                  <div>Size: {it.variant?.size || it.size}</div>
+                                )}
+                                {(it.variant?.color || it.color) && (
+                                  <div>Color: {it.variant?.color || it.color}</div>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </td>

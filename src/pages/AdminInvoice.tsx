@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/lib/api';
 
-interface InvoiceOrderItem { title: string; image?: string; qty: number; price: number; variant?: { size?: string } | null }
+interface InvoiceOrderItem { title: string; image?: string; qty: number; price: number; variant?: { size?: string; color?: string } | null; color?: string; size?: string }
 interface InvoiceOrder {
   id: string;
   createdAt: string;
@@ -15,6 +15,7 @@ interface InvoiceOrder {
   paymentMethod?: string;
   totals?: { total: number };
   shipping?: { name: string; phone: string; address1: string; address2?: string; city: string; state: string; pincode: string };
+  streetAddress?: string;
   items: InvoiceOrderItem[];
 }
 
@@ -138,7 +139,10 @@ export default function AdminInvoice() {
                 <h3 className="font-semibold mb-2">Bill To</h3>
                 <div className="rounded border p-3 text-sm">
                   <p className="font-medium">{order.shipping?.name}</p>
-                  <p className="text-muted-foreground whitespace-pre-line">{order.shipping?.address1}{order.shipping?.address2 ? `\n${order.shipping?.address2}` : ''}</p>
+                  <p className="text-muted-foreground">{order.shipping?.address1}</p>
+                  {(order.shipping?.address2 || order.streetAddress) && (
+                    <p className="text-muted-foreground">{order.shipping?.address2 || order.streetAddress}</p>
+                  )}
                   <p className="text-muted-foreground">{order.shipping?.city}, {order.shipping?.state} {order.shipping?.pincode}</p>
                   <p>{order.shipping?.phone}</p>
                 </div>
@@ -164,9 +168,14 @@ export default function AdminInvoice() {
                             <img src={it.image || '/placeholder.svg'} className="w-10 h-10 object-cover rounded" />
                             <div>
                               <div className="font-medium">{it.title}</div>
-                              {it.variant?.size && (
-                                <div className="text-xs text-muted-foreground">Size: {it.variant.size}</div>
-                              )}
+                              <div className="text-xs text-muted-foreground space-y-0.5">
+                                {(it.variant?.size || it.size) && (
+                                  <div>Size: {it.variant?.size || it.size}</div>
+                                )}
+                                {(it.variant?.color || it.color) && (
+                                  <div>Color: {it.variant?.color || it.color}</div>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </td>
