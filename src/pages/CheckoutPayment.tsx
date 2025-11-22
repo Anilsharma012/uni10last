@@ -203,7 +203,7 @@ const CheckoutPayment = () => {
   };
 
   const validateCustomerDetails = () => {
-    if (!customerDetails.name || !customerDetails.phone || !customerDetails.address || !customerDetails.city || !customerDetails.state || !customerDetails.pincode) {
+    if (!customerDetails.name || !customerDetails.phone || !customerDetails.address || !customerDetails.streetAddress || !customerDetails.city || !customerDetails.state || !customerDetails.pincode) {
       toast({
         title: 'Missing Details',
         description: 'Please fill in all delivery details before proceeding',
@@ -226,6 +226,7 @@ const CheckoutPayment = () => {
         name: customerDetails.name,
         phone: customerDetails.phone,
         address: customerDetails.address,
+        streetAddress: customerDetails.streetAddress,
         city: customerDetails.city,
         state: customerDetails.state,
         pincode: customerDetails.pincode,
@@ -240,6 +241,7 @@ const CheckoutPayment = () => {
           meta: i.meta,
           image: i.image,
           size: i.meta?.size || undefined,
+          color: i.meta?.color || undefined,
         })),
         subtotal,
         discountAmount,
@@ -425,6 +427,7 @@ const CheckoutPayment = () => {
                 name: customerDetails.name,
                 phone: customerDetails.phone,
                 address: customerDetails.address,
+                streetAddress: customerDetails.streetAddress,
                 city: customerDetails.city,
                 state: customerDetails.state,
                 pincode: customerDetails.pincode,
