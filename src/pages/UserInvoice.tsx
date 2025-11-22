@@ -136,7 +136,8 @@ export default function UserInvoice() {
                 <h3 className="font-semibold mb-2">Ship To</h3>
                 <div className="rounded border p-3 text-sm">
                   <p className="font-medium">{ship?.name}</p>
-                  <p className="text-muted-foreground whitespace-pre-line">{ship?.address1}</p>
+                  <p className="text-muted-foreground">{ship?.address1}</p>
+                  {ship?.address2 && <p className="text-muted-foreground">{ship.address2}</p>}
                   <p className="text-muted-foreground">{ship?.city}, {ship?.state} {ship?.pincode}</p>
                   <p>{ship?.phone}</p>
                 </div>
@@ -185,7 +186,7 @@ export default function UserInvoice() {
               </div>
               <div className="flex items-center justify-between text-sm py-1">
                 <span>Shipping</span>
-                <span>���{shipping.toLocaleString('en-IN')}</span>
+                <span>₹{shipping.toLocaleString('en-IN')}</span>
               </div>
               <div className="flex items-center justify-between text-sm py-1">
                 <span>Tax</span>
