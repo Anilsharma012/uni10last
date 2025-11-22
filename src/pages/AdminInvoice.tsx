@@ -139,7 +139,10 @@ export default function AdminInvoice() {
                 <h3 className="font-semibold mb-2">Bill To</h3>
                 <div className="rounded border p-3 text-sm">
                   <p className="font-medium">{order.shipping?.name}</p>
-                  <p className="text-muted-foreground whitespace-pre-line">{order.shipping?.address1}{order.shipping?.address2 ? `\n${order.shipping?.address2}` : ''}</p>
+                  <p className="text-muted-foreground">{order.shipping?.address1}</p>
+                  {(order.shipping?.address2 || order.streetAddress) && (
+                    <p className="text-muted-foreground">{order.shipping?.address2 || order.streetAddress}</p>
+                  )}
                   <p className="text-muted-foreground">{order.shipping?.city}, {order.shipping?.state} {order.shipping?.pincode}</p>
                   <p>{order.shipping?.phone}</p>
                 </div>
