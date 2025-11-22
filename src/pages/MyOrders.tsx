@@ -330,8 +330,8 @@ const MyOrders = () => {
                               <div>
                                 <p className="text-sm font-semibold mb-2">Order: {order._id.substring(0, 12).toUpperCase()}</p>
                                 <div className="bg-muted rounded-lg p-3 mb-4">
-                                  {order.items.map((item) => (
-                                    <p key={item.id} className="text-sm text-muted-foreground">
+                                  {order.items.map((item, index) => (
+                                    <p key={`${item.id || item.productId}-${item.size || ''}-${item.color || ''}-${index}`} className="text-sm text-muted-foreground">
                                       {item.title} (×{item.qty})
                                     </p>
                                   ))}
