@@ -125,11 +125,11 @@ export default function UserInvoice() {
               <div>
                 <h3 className="font-semibold mb-2">Ship To</h3>
                 <div className="rounded border p-3 text-sm">
-                  <p className="font-medium">{ship?.name}</p>
-                  <p className="text-muted-foreground">{ship?.address1}</p>
-                  {ship?.address2 && <p className="text-muted-foreground">{ship.address2}</p>}
-                  <p className="text-muted-foreground">{ship?.city}, {ship?.state} {ship?.pincode}</p>
-                  <p>{ship?.phone}</p>
+                  <p className="font-medium">{order?.name}</p>
+                  <p className="text-muted-foreground">{order?.address}</p>
+                  {order?.streetAddress && <p className="text-muted-foreground">{order.streetAddress}</p>}
+                  <p className="text-muted-foreground">{order?.city}, {order?.state} {order?.pincode}</p>
+                  <p className="text-muted-foreground">{order?.phone}</p>
                 </div>
               </div>
             </div>
