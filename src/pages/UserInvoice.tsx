@@ -77,16 +77,6 @@ export default function UserInvoice() {
   const shipping = 0;
   const tax = Math.max(0, total - subtotal - shipping);
 
-  const ship = order ? {
-    name: order.name,
-    phone: order.phone,
-    address1: order.address,
-    address2: order.streetAddress,
-    city: order.city,
-    state: order.state,
-    pincode: order.pincode,
-  } : {} as any;
-
   return (
     <div className="min-h-screen bg-background">
       <style>{`@media print { .no-print { display: none !important; } .print:p-0 { padding: 0 !important; } }`}</style>
