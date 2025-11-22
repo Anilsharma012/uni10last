@@ -163,9 +163,14 @@ export default function UserInvoice() {
                             <img src={it.image || '/placeholder.svg'} className="w-10 h-10 object-cover rounded" />
                             <div>
                               <div className="font-medium">{it.title}</div>
-                              {it.variant?.size && (
-                                <div className="text-xs text-muted-foreground">Size: {it.variant.size}</div>
-                              )}
+                              <div className="text-xs text-muted-foreground space-y-0.5">
+                                {(it.variant?.size || it.size) && (
+                                  <div>Size: {it.variant?.size || it.size}</div>
+                                )}
+                                {(it.variant?.color || it.color) && (
+                                  <div>Color: {it.variant?.color || it.color}</div>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </td>
