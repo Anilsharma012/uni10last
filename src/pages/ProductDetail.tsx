@@ -265,6 +265,15 @@ const ProductDetail = () => {
       return;
     }
 
+    if (Array.isArray(product.colors) && product.colors.length > 0 && !selectedColor) {
+      toast({
+        title: "Select a color",
+        description: "Please choose a color before adding to cart.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const currentStock =
       usingSizeInventory && selectedSize
         ? product.sizeInventory?.find(
@@ -343,6 +352,15 @@ const ProductDetail = () => {
       return;
     }
 
+    if (Array.isArray(product.colors) && product.colors.length > 0 && !selectedColor) {
+      toast({
+        title: "Select a color",
+        description: "Please choose a color before proceeding to checkout.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const currentStock =
       usingSizeInventory && selectedSize
         ? product.sizeInventory?.find(
@@ -368,7 +386,6 @@ const ProductDetail = () => {
       meta: {} as any,
     };
     if (selectedSize) item.meta.size = selectedSize;
-    // ✅ color meta me
     if (selectedColor) item.meta.color = selectedColor;
 
     if (!user) {

@@ -203,7 +203,7 @@ const CheckoutPayment = () => {
   };
 
   const validateCustomerDetails = () => {
-    if (!customerDetails.name || !customerDetails.phone || !customerDetails.address || !customerDetails.city || !customerDetails.state || !customerDetails.pincode) {
+    if (!customerDetails.name || !customerDetails.phone || !customerDetails.address || !customerDetails.streetAddress || !customerDetails.city || !customerDetails.state || !customerDetails.pincode) {
       toast({
         title: 'Missing Details',
         description: 'Please fill in all delivery details before proceeding',
@@ -226,6 +226,7 @@ const CheckoutPayment = () => {
         name: customerDetails.name,
         phone: customerDetails.phone,
         address: customerDetails.address,
+        streetAddress: customerDetails.streetAddress,
         city: customerDetails.city,
         state: customerDetails.state,
         pincode: customerDetails.pincode,
@@ -240,6 +241,7 @@ const CheckoutPayment = () => {
           meta: i.meta,
           image: i.image,
           size: i.meta?.size || undefined,
+          color: i.meta?.color || undefined,
         })),
         subtotal,
         discountAmount,
@@ -271,6 +273,7 @@ const CheckoutPayment = () => {
         try {
           const raw = localStorage.getItem('uni_orders_v1');
           const arr = raw ? (JSON.parse(raw) as any[]) : [];
+          const totalWithShipping = total + shippingCharges;
           const order = {
             _id: newOrderId,
             name: customerDetails.name,
@@ -280,7 +283,8 @@ const CheckoutPayment = () => {
             city: customerDetails.city,
             state: customerDetails.state,
             pincode: customerDetails.pincode,
-            total,
+            landmark: customerDetails.landmark,
+            total: totalWithShipping,
             paymentMethod: 'COD',
             status: 'pending',
             createdAt: new Date().toISOString(),
@@ -425,6 +429,7 @@ const CheckoutPayment = () => {
                 name: customerDetails.name,
                 phone: customerDetails.phone,
                 address: customerDetails.address,
+                streetAddress: customerDetails.streetAddress,
                 city: customerDetails.city,
                 state: customerDetails.state,
                 pincode: customerDetails.pincode,
