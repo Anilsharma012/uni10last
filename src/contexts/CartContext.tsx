@@ -23,8 +23,8 @@ type CartContextType = {
   total: number;
   appliedCoupon: AppliedCoupon | null;
   addToCart: (item: Omit<CartItem, "qty">, qty?: number) => void;
-  updateQty: (id: string, qty: number) => void;
-  removeItem: (id: string) => void;
+  updateQty: (cartKey: string, qty: number) => void;
+  removeItem: (cartKey: string) => void;
   clearCart: () => void;
   applyCoupon: (coupon: AppliedCoupon) => void;
   removeCoupon: () => void;
