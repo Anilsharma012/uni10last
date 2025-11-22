@@ -61,6 +61,7 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [streetAddress, setStreetAddress] = useState(""); // ✅ NEW FIELD
   const [landmark, setLandmark] = useState(""); // ⭐ NEW FIELD
   const [city, setCity] = useState("");
   const [stateName, setStateName] = useState("");
@@ -173,10 +174,10 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
   async function handleRazorpayPayment() {
     try {
       // validations (landmark optional rakha hai)
-      if (!name || !phone || !address || !city || !stateName || !pincode) {
+      if (!name || !phone || !address || !streetAddress || !city || !stateName || !pincode) {
         toast({
           title: "Missing details",
-          description: "Please fill in all delivery details.",
+          description: "Please fill in all delivery details including street address.",
           variant: "destructive",
         });
         return;
@@ -233,6 +234,7 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
                 name,
                 phone,
                 address,
+                streetAddress, // ✅ ADD STREET ADDRESS
                 landmark, // ⭐ NEW FIELD SENT
                 city,
                 state: stateName,
@@ -271,6 +273,10 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
       toast({ title: "Transaction ID Required", description: "Please enter your UPI Txn ID", variant: "destructive" });
       return;
     }
+    if (!name || !phone || !address || !streetAddress || !city || !stateName || !pincode) {
+      toast({ title: "Missing Details", description: "Please fill all delivery details including street address", variant: "destructive" });
+      return;
+    }
     try {
       setSubmitting(true);
       const response = await fetch("/api/payment/manual", {
@@ -288,6 +294,7 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
           name,
           phone,
           address,
+          streetAddress, // ✅ ADD STREET ADDRESS
           landmark, // ⭐ NEW FIELD SENT
           city,
           state: stateName,
@@ -309,16 +316,16 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
 
   // ✅ COD LOGIC from second code – proper order create + placeOrder + localStorage
   const handleCodOrder = async () => {
-    if (!name || !phone || !address) {
-      toast({ title: "Please fill name, phone and address", variant: "destructive" });
+    if (!name || !phone || !address || !streetAddress) {
+      toast({ title: "Please fill name, phone, address and street address", variant: "destructive" });
       return;
     }
     if (!city || !stateName || !pincode) {
       toast({ title: "Please add city, state and pincode", variant: "destructive" });
       return;
     }
-    if (!/^\d{6}$/.test(pincode)) {
-      toast({ title: "Enter a valid 6-digit pincode", variant: "destructive" });
+    if (!/^\d{4,8}$/.test(pincode)) {
+      toast({ title: "Enter a valid pincode (4-8 digits)", variant: "destructive" });
       return;
     }
 
@@ -328,6 +335,7 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
       name,
       phone,
       address,
+      streetAddress, // ✅ ADD STREET ADDRESS
       landmark, // ⭐ landmark included
       city,
       state: stateName,
@@ -342,6 +350,7 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
         meta: i.meta,
         image: i.image,
         size: i.meta?.size || undefined,
+        color: i.meta?.color || undefined, // ✅ ADD COLOR
       })),
       subtotal,
       discountAmount,
@@ -354,6 +363,7 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
         name,
         phone,
         address,
+        streetAddress, // ✅ ADD STREET ADDRESS
         landmark,
         city,
         state: stateName,
@@ -397,6 +407,7 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
           name,
           phone,
           address,
+          streetAddress, // ✅ ADD STREET ADDRESS
           landmark,
           city,
           state: stateName,
@@ -412,6 +423,7 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
             qty: i.qty,
             image: i.image,
             size: i.meta?.size,
+            color: i.meta?.color, // ✅ ADD COLOR
           })),
         } as any;
         localStorage.setItem("uni_orders_v1", JSON.stringify([order, ...arr]));
