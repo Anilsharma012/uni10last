@@ -66,6 +66,7 @@ const CheckoutPayment = () => {
     name: localStorage.getItem('userName') || '',
     phone: localStorage.getItem('userPhone') || '',
     address: localStorage.getItem('userAddress') || '',
+    streetAddress: localStorage.getItem('userStreetAddress') || '',
     city: localStorage.getItem('userCity') || '',
     state: localStorage.getItem('userState') || '',
     pincode: localStorage.getItem('userPincode') || '',
