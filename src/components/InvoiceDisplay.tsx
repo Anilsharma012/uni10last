@@ -174,6 +174,7 @@ export function InvoiceDisplay({ order, invoice, businessInfo, isLoading, error 
             <thead>
               <tr className="border-b-2 border-border">
                 <th className="text-left py-2 font-semibold">Item</th>
+                <th className="text-left py-2 font-semibold">Color</th>
                 <th className="text-right py-2 font-semibold">Qty</th>
                 <th className="text-right py-2 font-semibold">Price</th>
                 <th className="text-right py-2 font-semibold">Total</th>
@@ -189,15 +190,24 @@ export function InvoiceDisplay({ order, invoice, businessInfo, isLoading, error 
                       )}
                       <div>
                         <p className="font-medium">{item.title}</p>
-                        {item.variant && (
+                        {item.variant && !item.variant.color && (
                           <p className="text-xs text-muted-foreground">
                             {Object.entries(item.variant)
+                              .filter(([k]) => k !== 'color')
                               .map(([k, v]) => `${k}: ${v}`)
                               .join(', ')}
                           </p>
                         )}
+                        {item.size && !item.variant?.size && (
+                          <p className="text-xs text-muted-foreground">Size: {item.size}</p>
+                        )}
                       </div>
                     </div>
+                  </td>
+                  <td className="py-3">
+                    <p className="text-sm">
+                      {item.color || item.variant?.color || '-'}
+                    </p>
                   </td>
                   <td className="text-right py-3">{item.qty}</td>
                   <td className="text-right py-3">₹{item.price.toLocaleString('en-IN')}</td>
