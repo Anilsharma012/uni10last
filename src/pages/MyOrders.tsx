@@ -254,8 +254,8 @@ const MyOrders = () => {
                     <div className="lg:col-span-4 space-y-2">
                       <p className="text-xs text-muted-foreground uppercase tracking-wide">Items ({order.items.length})</p>
                       <div className="space-y-1">
-                        {order.items.slice(0, 2).map((item) => (
-                          <p key={item.id} className="text-sm text-muted-foreground truncate">
+                        {order.items.slice(0, 2).map((item, index) => (
+                          <p key={`${item.id || item.productId}-${index}`} className="text-sm text-muted-foreground truncate">
                             {item.title} (×{item.qty})
                           </p>
                         ))}
