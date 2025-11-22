@@ -123,13 +123,15 @@ export default function UserInvoice() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
               <div>
-                <h3 className="font-semibold mb-2">Ship To</h3>
-                <div className="rounded border p-3 text-sm">
-                  <p className="font-medium">{order?.name}</p>
-                  <p className="text-muted-foreground">{order?.address}</p>
-                  {order?.streetAddress && <p className="text-muted-foreground">{order.streetAddress}</p>}
-                  <p className="text-muted-foreground">{order?.city}, {order?.state} {order?.pincode}</p>
-                  <p className="text-muted-foreground">{order?.phone}</p>
+                <h3 className="font-semibold mb-3 text-base">Ship To</h3>
+                <div className="rounded border p-4 text-sm space-y-1.5 bg-white">
+                  {order?.name && <p className="font-semibold text-gray-900">{order.name}</p>}
+                  {order?.address && <p className="text-gray-700">{order.address}</p>}
+                  {order?.streetAddress && <p className="text-gray-700">{order.streetAddress}</p>}
+                  {(order?.city || order?.state || order?.pincode) && (
+                    <p className="text-gray-700">{[order.city, order.state, order.pincode].filter(Boolean).join(' - ')}</p>
+                  )}
+                  {order?.phone && <p className="text-gray-700 pt-1">📞 {order.phone}</p>}
                 </div>
               </div>
             </div>
