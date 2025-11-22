@@ -353,9 +353,17 @@ const CheckoutPayment = () => {
         body: JSON.stringify({
           amount: totalWithShipping,
           currency: 'INR',
-          items,
+          items: items.map(i => ({ ...i, color: i.meta?.color })),
           appliedCoupon,
           shipping: shippingCharges,
+          streetAddress: customerDetails.streetAddress,
+          name: customerDetails.name,
+          phone: customerDetails.phone,
+          address: customerDetails.address,
+          city: customerDetails.city,
+          state: customerDetails.state,
+          pincode: customerDetails.pincode,
+          landmark: customerDetails.landmark,
         }),
       });
 
