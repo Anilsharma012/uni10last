@@ -649,13 +649,23 @@ const CheckoutPayment = () => {
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <Label htmlFor="address">Street Address *</Label>
+                  <Label htmlFor="address">Address *</Label>
                   <Input
                     id="address"
                     type="text"
-                    placeholder="House number, street name"
+                    placeholder="Apartment, building, sector"
                     value={customerDetails.address}
                     onChange={(e) => setCustomerDetails({ ...customerDetails, address: e.target.value })}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label htmlFor="streetAddress">Street Address *</Label>
+                  <Input
+                    id="streetAddress"
+                    type="text"
+                    placeholder="House number, street name"
+                    value={customerDetails.streetAddress}
+                    onChange={(e) => setCustomerDetails({ ...customerDetails, streetAddress: e.target.value })}
                   />
                 </div>
                 <div>
