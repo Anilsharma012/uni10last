@@ -122,7 +122,7 @@ router.get('/orders/:id', requireAuth, requireAdmin, async (req, res) => {
         name: doc.name || '',
         phone: doc.phone || '',
         address1: address,
-        address2: '',
+        address2: doc.streetAddress || '',
         city: doc.city || derived.city || '',
         state: (doc.state && String(doc.state).trim()) ? doc.state : '',
         pincode: (doc.pincode && String(doc.pincode).trim()) ? doc.pincode : derived.pincode || '',
