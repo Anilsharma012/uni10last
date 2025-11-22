@@ -108,7 +108,7 @@ const Cart = () => {
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-3 sm:space-y-4">
               {items.map((item) => (
-                <Card key={item.id} className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <Card key={item.cartKey || item.id} className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div className="flex items-center gap-2 sm:gap-4">
                     {item.image && <img src={item.image} alt={item.title} className="w-16 sm:w-20 h-16 sm:h-20 object-cover rounded flex-shrink-0" />}
                     <div className="flex-1 min-w-0">
@@ -119,13 +119,13 @@ const Cart = () => {
                   </div>
                   <div className="flex flex-col items-end sm:flex-row sm:items-center gap-2 sm:gap-4">
                     <div className="flex items-center border border-border rounded text-xs sm:text-base">
-                      <button className="px-2 sm:px-3 py-1" onClick={() => handleDecrease(item.id, item.qty)}>-</button>
+                      <button className="px-2 sm:px-3 py-1" onClick={() => handleDecrease(item.cartKey || item.id, item.qty)}>-</button>
                       <div className="px-2 sm:px-3 py-1 min-w-[32px] text-center">{item.qty}</div>
-                      <button className="px-2 sm:px-3 py-1" onClick={() => handleIncrease(item.id, item.qty)}>+</button>
+                      <button className="px-2 sm:px-3 py-1" onClick={() => handleIncrease(item.cartKey || item.id, item.qty)}>+</button>
                     </div>
                     <div className="text-right">
                       <div className="font-semibold text-xs sm:text-base">₹{(item.qty * item.price).toLocaleString("en-IN")}</div>
-                      <button className="text-xs text-destructive mt-1 inline-flex items-center gap-0.5" onClick={() => handleRemove(item.id)}>
+                      <button className="text-xs text-destructive mt-1 inline-flex items-center gap-0.5" onClick={() => handleRemove(item.cartKey || item.id)}>
                         <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" /> <span className="hidden sm:inline">Remove</span>
                       </button>
                     </div>
