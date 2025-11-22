@@ -26,13 +26,13 @@ const Cart = () => {
     }
   }, [searchParams, couponCode, appliedCoupon]);
 
-  const handleDecrease = (id: string, qty: number) => {
+  const handleDecrease = (cartKey: string, qty: number) => {
     if (qty <= 1) return;
-    updateQty(id, qty - 1);
+    updateQty(cartKey, qty - 1);
   };
-  const handleIncrease = (id: string, qty: number) => updateQty(id, qty + 1);
-  const handleRemove = (id: string) => {
-    removeItem(id);
+  const handleIncrease = (cartKey: string, qty: number) => updateQty(cartKey, qty + 1);
+  const handleRemove = (cartKey: string) => {
+    removeItem(cartKey);
     toast({ title: "Removed from cart" });
   };
 
