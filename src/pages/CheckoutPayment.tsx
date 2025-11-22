@@ -241,6 +241,7 @@ const CheckoutPayment = () => {
           name: customerDetails.name,
           phone: customerDetails.phone,
           address: customerDetails.address,
+          streetAddress: customerDetails.streetAddress,
           city: customerDetails.city,
           state: customerDetails.state,
           pincode: customerDetails.pincode,
