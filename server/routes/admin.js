@@ -122,7 +122,7 @@ router.get('/orders/:id', requireAuth, requireAdmin, async (req, res) => {
         name: doc.name || '',
         phone: doc.phone || '',
         address1: address,
-        address2: '',
+        address2: doc.streetAddress || '',
         city: doc.city || derived.city || '',
         state: (doc.state && String(doc.state).trim()) ? doc.state : '',
         pincode: (doc.pincode && String(doc.pincode).trim()) ? doc.pincode : derived.pincode || '',
@@ -135,6 +135,8 @@ router.get('/orders/:id', requireAuth, requireAdmin, async (req, res) => {
             image: it.image || '',
             price: Number(it.price || 0),
             qty: Number(it.qty || 0),
+            size: it.size || (it.variant?.size ? it.variant.size : undefined),
+            color: it.color || (it.variant?.color ? it.variant.color : undefined),
             variant: it.variant || null,
           }))
         : [],

@@ -153,14 +153,17 @@ export function InvoiceDisplay({ order, invoice, businessInfo, isLoading, error 
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">Ship To</p>
             <div className="text-sm space-y-1">
-              <p className="font-semibold">{order.name}</p>
-              <p>{order.address}</p>
-              <p>
-                {order.city}
-                {order.state && `, ${order.state}`}
-                {order.pincode && ` ${order.pincode}`}
-              </p>
-              {order.phone && <p>{order.phone}</p>}
+              {order.name && <p><span className="font-semibold">Name:</span> {order.name}</p>}
+              {(order.streetAddress || order.address) && (
+                <>
+                  {order.streetAddress && <p><span className="font-semibold">Street:</span> {order.streetAddress}</p>}
+                  {order.address && <p><span className="font-semibold">Address:</span> {order.address}</p>}
+                </>
+              )}
+              {order.city && <p><span className="font-semibold">City:</span> {order.city}</p>}
+              {order.state && <p><span className="font-semibold">State:</span> {order.state}</p>}
+              {order.pincode && <p><span className="font-semibold">Pincode:</span> {order.pincode}</p>}
+              {order.phone && <p><span className="font-semibold">Phone:</span> {order.phone}</p>}
             </div>
           </div>
         </div>
@@ -171,6 +174,7 @@ export function InvoiceDisplay({ order, invoice, businessInfo, isLoading, error 
             <thead>
               <tr className="border-b-2 border-border">
                 <th className="text-left py-2 font-semibold">Item</th>
+                <th className="text-left py-2 font-semibold">Color</th>
                 <th className="text-right py-2 font-semibold">Qty</th>
                 <th className="text-right py-2 font-semibold">Price</th>
                 <th className="text-right py-2 font-semibold">Total</th>
@@ -186,15 +190,24 @@ export function InvoiceDisplay({ order, invoice, businessInfo, isLoading, error 
                       )}
                       <div>
                         <p className="font-medium">{item.title}</p>
-                        {item.variant && (
+                        {item.variant && !item.variant.color && (
                           <p className="text-xs text-muted-foreground">
                             {Object.entries(item.variant)
+                              .filter(([k]) => k !== 'color')
                               .map(([k, v]) => `${k}: ${v}`)
                               .join(', ')}
                           </p>
                         )}
+                        {item.size && !item.variant?.size && (
+                          <p className="text-xs text-muted-foreground">Size: {item.size}</p>
+                        )}
                       </div>
                     </div>
+                  </td>
+                  <td className="py-3">
+                    <p className="text-sm">
+                      {item.color || item.variant?.color || '-'}
+                    </p>
                   </td>
                   <td className="text-right py-3">{item.qty}</td>
                   <td className="text-right py-3">₹{item.price.toLocaleString('en-IN')}</td>

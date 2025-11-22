@@ -2949,6 +2949,34 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                       ₹{Number((order as any).total ?? (order as any).total_amount ?? 0).toLocaleString('en-IN')}
                     </p>
                   </div>
+                  {(() => {
+                    const itemsCount = (order.items || []).length;
+                    const singleItem = itemsCount === 1 ? order.items[0] : null;
+                    return (
+                      <div className="text-sm text-muted-foreground hidden sm:block flex-1 px-4">
+                        {singleItem ? (
+                          <div className="space-y-0.5">
+                            {(singleItem.size || singleItem.variant?.size) && (
+                              <div>Size: {singleItem.size || singleItem.variant?.size}</div>
+                            )}
+                            {(singleItem.color || singleItem.variant?.color) && (
+                              <div>Color: {singleItem.color || singleItem.variant?.color}</div>
+                            )}
+                            {!singleItem.size && !singleItem.color && !singleItem.variant?.size && !singleItem.variant?.color && (
+                              <div className="text-xs italic">N/A</div>
+                            )}
+                          </div>
+                        ) : itemsCount > 1 ? (
+                          <div className="text-xs">
+                            <div className="font-medium">{itemsCount} items</div>
+                            <div className="italic">see details for sizes/colors</div>
+                          </div>
+                        ) : (
+                          <div className="text-xs italic">N/A</div>
+                        )}
+                      </div>
+                    );
+                  })()}
                   <div className="flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
                     {(() => {
                       const orderId = String((order._id || order.id) as any);
@@ -4158,10 +4186,9 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                         />
                         <div className="flex-1">
                           <div className="font-medium">{it.title}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {it.variant?.size ? `Size: ${it.variant.size}` : it.size ? `Size: ${it.size}` : ''}
-                            {(it.variant?.size || it.size) && (it.variant?.color || it.color) ? ' • ' : ''}
-                            {it.variant?.color ? `Color: ${it.variant.color}` : it.color ? `Color: ${it.color}` : ''}
+                          <div className="text-xs text-muted-foreground space-y-0.5">
+                            {(it.size || it.variant?.size) && <div>Size: {it.size || it.variant?.size}</div>}
+                            {(it.color || it.variant?.color) && <div>Color: {it.color || it.variant?.color}</div>}
                           </div>
                         </div>
                         <div className="text-sm tabular-nums">{it.qty} × ���₹{Number(it.price || 0).toLocaleString('en-IN')}</div>
