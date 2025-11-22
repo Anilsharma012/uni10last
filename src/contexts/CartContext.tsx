@@ -69,20 +69,21 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addToCart = (item: Omit<CartItem, "qty">, qty = 1) => {
     setItems((prev) => {
-      const existing = prev.find((p) => p.id === item.id && JSON.stringify(p.meta || {}) === JSON.stringify(item.meta || {}));
+      const cartKey = generateCartKey(item.id, item.meta);
+      const existing = prev.find((p) => p.cartKey === cartKey);
       if (existing) {
-        return prev.map((p) => (p.id === existing.id && JSON.stringify(p.meta || {}) === JSON.stringify(item.meta || {}) ? { ...p, qty: p.qty + qty } : p));
+        return prev.map((p) => (p.cartKey === cartKey ? { ...p, qty: p.qty + qty } : p));
       }
-      return [...prev, { ...item, qty }];
+      return [...prev, { ...item, qty, cartKey }];
     });
   };
 
-  const updateQty = (id: string, qty: number) => {
-    setItems((prev) => prev.map((p) => (p.id === id ? { ...p, qty: Math.max(1, qty) } : p)));
+  const updateQty = (cartKey: string, qty: number) => {
+    setItems((prev) => prev.map((p) => (p.cartKey === cartKey ? { ...p, qty: Math.max(1, qty) } : p)));
   };
 
-  const removeItem = (id: string) => {
-    setItems((prev) => prev.filter((p) => p.id !== id));
+  const removeItem = (cartKey: string) => {
+    setItems((prev) => prev.filter((p) => p.cartKey !== cartKey));
   };
 
   const clearCart = () => {
