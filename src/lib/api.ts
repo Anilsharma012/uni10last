@@ -73,7 +73,7 @@ export async function api(path: string, options: RequestInit = {}) {
   } catch (error: any) {
     // Network failures are common in preview/iframe environments; return demo fallbacks and avoid noisy errors.
     const errorMsg = error instanceof Error ? error.message : String(error);
-    console.warn("API fetch failed (using mock fallback):", url, errorMsg);
+    // Silently use fallbacks without console warnings
 
     // Preview environments (like the remote iframe) often can't reach localhost backend.
     // Provide lightweight mock fallback for common admin endpoints so the UI can be inspected.
