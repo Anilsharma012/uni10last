@@ -162,14 +162,13 @@ export function useWishlist() {
             throw new Error(result?.json?.message || 'Failed to remove');
           }
         } catch (e: any) {
-          console.warn('Failed to remove from server, using localStorage:', e);
           const updated = new Set(wishlistIds);
           updated.delete(id);
           setWishlistIds(updated);
           try {
             localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(Array.from(updated)));
           } catch (e2) {
-            console.warn('Failed to save to localStorage', e2);
+            // Silently fail
           }
           toast.success('Removed from wishlist');
         }
