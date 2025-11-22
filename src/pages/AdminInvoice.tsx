@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { api } from '@/lib/api';
 
-interface InvoiceOrderItem { title: string; image?: string; qty: number; price: number; variant?: { size?: string } | null }
+interface InvoiceOrderItem { title: string; image?: string; qty: number; price: number; variant?: { size?: string; color?: string } | null; color?: string; size?: string }
 interface InvoiceOrder {
   id: string;
   createdAt: string;
@@ -15,6 +15,7 @@ interface InvoiceOrder {
   paymentMethod?: string;
   totals?: { total: number };
   shipping?: { name: string; phone: string; address1: string; address2?: string; city: string; state: string; pincode: string };
+  streetAddress?: string;
   items: InvoiceOrderItem[];
 }
 
