@@ -30,7 +30,7 @@ export function useWishlist() {
               try {
                 localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(Array.from(ids)));
               } catch (e) {
-                console.warn('Failed to save wishlist to localStorage', e);
+                // Silently fail on localStorage
               }
             } else {
               // Fallback to localStorage on any error
@@ -42,6 +42,11 @@ export function useWishlist() {
           if (!ignore) {
             loadFromStorage();
           }
+        }
+      } catch (e) {
+        // Silently handle errors and fallback to localStorage
+        if (!ignore) {
+          loadFromStorage();
         }
       } finally {
         if (!ignore) {
