@@ -35,6 +35,12 @@ const STORAGE_KEY = "uni_cart_v1";
 const LEGACY_KEY = "cart_v1";
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+function generateCartKey(id: string, meta?: Record<string, any>): string {
+  if (!meta || Object.keys(meta).length === 0) return id;
+  const metaStr = JSON.stringify(meta);
+  return `${id}::${metaStr}`;
+}
+
 function readStorage(): CartItem[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_KEY);
