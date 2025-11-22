@@ -151,6 +151,7 @@ router.post('/verify', requireAuth, async (req, res) => {
       name,
       phone,
       address,
+      streetAddress,
       city,
       state,
       pincode,
