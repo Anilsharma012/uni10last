@@ -4086,13 +4086,13 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                     <div><span className="text-muted-foreground">Phone:</span> {orderDetail.shipping?.phone || orderDetail.phone || '-'}</div>
                     <div className="md:col-span-2"><span className="text-muted-foreground">Address:</span> {orderDetail.shipping?.address1 || orderDetail.address || '-'}</div>
                     {(orderDetail.shipping?.address2 || orderDetail.streetAddress) && (
-                      <div className="md:col-span-2"><span className="text-muted-foreground">Street Address:</span> {orderDetail.shipping?.address2 || orderDetail.streetAddress}</div>
+                      <div className="md:col-span-2"><span className="text-muted-foreground">Street Address:</span> {orderDetail.shipping?.address2 || orderDetail.streetAddress || '-'}</div>
                     )}
                     <div><span className="text-muted-foreground">City:</span> {orderDetail.shipping?.city || orderDetail.city || '-'}</div>
                     <div><span className="text-muted-foreground">State:</span> {orderDetail.shipping?.state || orderDetail.state || '-'}</div>
                     <div><span className="text-muted-foreground">Pincode:</span> {orderDetail.shipping?.pincode || orderDetail.pincode || '-'}</div>
                     {(orderDetail.shipping?.landmark || orderDetail.landmark) && (
-                      <div className="md:col-span-2"><span className="text-muted-foreground">Landmark:</span> {orderDetail.shipping?.landmark || orderDetail.landmark}</div>
+                      <div className="md:col-span-2"><span className="text-muted-foreground">Landmark:</span> {orderDetail.shipping?.landmark || orderDetail.landmark || '-'}</div>
                     )}
                   </div>
                 </div>
