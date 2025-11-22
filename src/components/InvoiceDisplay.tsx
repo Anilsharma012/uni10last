@@ -153,14 +153,17 @@ export function InvoiceDisplay({ order, invoice, businessInfo, isLoading, error 
           <div>
             <p className="text-xs font-semibold text-muted-foreground uppercase mb-2">Ship To</p>
             <div className="text-sm space-y-1">
-              <p className="font-semibold">{order.name}</p>
-              <p>{order.address}</p>
-              <p>
-                {order.city}
-                {order.state && `, ${order.state}`}
-                {order.pincode && ` ${order.pincode}`}
-              </p>
-              {order.phone && <p>{order.phone}</p>}
+              {order.name && <p><span className="font-semibold">Name:</span> {order.name}</p>}
+              {(order.streetAddress || order.address) && (
+                <>
+                  {order.streetAddress && <p><span className="font-semibold">Street:</span> {order.streetAddress}</p>}
+                  {order.address && <p><span className="font-semibold">Address:</span> {order.address}</p>}
+                </>
+              )}
+              {order.city && <p><span className="font-semibold">City:</span> {order.city}</p>}
+              {order.state && <p><span className="font-semibold">State:</span> {order.state}</p>}
+              {order.pincode && <p><span className="font-semibold">Pincode:</span> {order.pincode}</p>}
+              {order.phone && <p><span className="font-semibold">Phone:</span> {order.phone}</p>}
             </div>
           </div>
         </div>
