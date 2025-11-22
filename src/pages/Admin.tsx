@@ -4109,7 +4109,11 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                         />
                         <div className="flex-1">
                           <div className="font-medium">{it.title}</div>
-                          <div className="text-xs text-muted-foreground">{it.variant?.size ? `Size: ${it.variant.size}` : ''}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {it.variant?.size ? `Size: ${it.variant.size}` : it.size ? `Size: ${it.size}` : ''}
+                            {(it.variant?.size || it.size) && (it.variant?.color || it.color) ? ' • ' : ''}
+                            {it.variant?.color ? `Color: ${it.variant.color}` : it.color ? `Color: ${it.color}` : ''}
+                          </div>
                         </div>
                         <div className="text-sm tabular-nums">{it.qty} × ���₹{Number(it.price || 0).toLocaleString('en-IN')}</div>
                         <div className="w-20 text-right font-semibold">₹{(Number(it.qty || 0) * Number(it.price || 0)).toLocaleString('en-IN')}</div>
