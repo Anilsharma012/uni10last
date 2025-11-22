@@ -81,6 +81,7 @@ export default function UserInvoice() {
     name: order.name,
     phone: order.phone,
     address1: order.address,
+    address2: order.streetAddress,
     city: order.city,
     state: order.state,
     pincode: order.pincode,
@@ -184,7 +185,7 @@ export default function UserInvoice() {
               </div>
               <div className="flex items-center justify-between text-sm py-1">
                 <span>Shipping</span>
-                <span>₹{shipping.toLocaleString('en-IN')}</span>
+                <span>���{shipping.toLocaleString('en-IN')}</span>
               </div>
               <div className="flex items-center justify-between text-sm py-1">
                 <span>Tax</span>
