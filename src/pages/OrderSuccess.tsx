@@ -189,8 +189,8 @@ const OrderSuccess = () => {
                 <div>
                   <h3 className="font-semibold mb-4 text-sm">Items ({order.items.length})</h3>
                   <div className="space-y-3">
-                    {order.items.map((item) => (
-                      <div key={item.id} className="flex gap-4 pb-3 border-b border-border last:border-0">
+                    {order.items.map((item, index) => (
+                      <div key={`${item.id || item.productId}-${item.size || ''}-${item.color || ''}-${index}`} className="flex gap-4 pb-3 border-b border-border last:border-0">
                         {item.image && (
                           <img
                             src={item.image}
