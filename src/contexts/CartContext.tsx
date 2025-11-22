@@ -7,6 +7,7 @@ export type CartItem = {
   image?: string;
   qty: number;
   meta?: Record<string, any>;
+  cartKey?: string; // Unique key for cart item including variants
 };
 
 export type AppliedCoupon = {
@@ -22,8 +23,8 @@ type CartContextType = {
   total: number;
   appliedCoupon: AppliedCoupon | null;
   addToCart: (item: Omit<CartItem, "qty">, qty?: number) => void;
-  updateQty: (id: string, qty: number) => void;
-  removeItem: (id: string) => void;
+  updateQty: (cartKey: string, qty: number) => void;
+  removeItem: (cartKey: string) => void;
   clearCart: () => void;
   applyCoupon: (coupon: AppliedCoupon) => void;
   removeCoupon: () => void;
@@ -34,11 +35,21 @@ const STORAGE_KEY = "uni_cart_v1";
 const LEGACY_KEY = "cart_v1";
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+function generateCartKey(id: string, meta?: Record<string, any>): string {
+  if (!meta || Object.keys(meta).length === 0) return id;
+  const metaStr = JSON.stringify(meta);
+  return `${id}::${metaStr}`;
+}
+
 function readStorage(): CartItem[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_KEY);
     if (!raw) return [];
-    return JSON.parse(raw) as CartItem[];
+    const items = JSON.parse(raw) as CartItem[];
+    return items.map(item => ({
+      ...item,
+      cartKey: item.cartKey || generateCartKey(item.id, item.meta)
+    }));
   } catch (e) {
     console.error("Failed to read cart from storage", e);
     return [];
@@ -62,20 +73,21 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addToCart = (item: Omit<CartItem, "qty">, qty = 1) => {
     setItems((prev) => {
-      const existing = prev.find((p) => p.id === item.id && JSON.stringify(p.meta || {}) === JSON.stringify(item.meta || {}));
+      const cartKey = generateCartKey(item.id, item.meta);
+      const existing = prev.find((p) => p.cartKey === cartKey);
       if (existing) {
-        return prev.map((p) => (p.id === existing.id ? { ...p, qty: p.qty + qty } : p));
+        return prev.map((p) => (p.cartKey === cartKey ? { ...p, qty: p.qty + qty } : p));
       }
-      return [...prev, { ...item, qty }];
+      return [...prev, { ...item, qty, cartKey }];
     });
   };
 
-  const updateQty = (id: string, qty: number) => {
-    setItems((prev) => prev.map((p) => (p.id === id ? { ...p, qty: Math.max(1, qty) } : p)));
+  const updateQty = (cartKey: string, qty: number) => {
+    setItems((prev) => prev.map((p) => (p.cartKey === cartKey ? { ...p, qty: Math.max(1, qty) } : p)));
   };
 
-  const removeItem = (id: string) => {
-    setItems((prev) => prev.filter((p) => p.id !== id));
+  const removeItem = (cartKey: string) => {
+    setItems((prev) => prev.filter((p) => p.cartKey !== cartKey));
   };
 
   const clearCart = () => {

@@ -136,15 +136,17 @@ export default function AdminInvoice() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
               <div>
-                <h3 className="font-semibold mb-2">Bill To</h3>
-                <div className="rounded border p-3 text-sm">
-                  <p className="font-medium">{order.shipping?.name}</p>
-                  <p className="text-muted-foreground">{order.shipping?.address1}</p>
-                  {(order.shipping?.address2 || order.streetAddress) && (
-                    <p className="text-muted-foreground">{order.shipping?.address2 || order.streetAddress}</p>
+                <h3 className="font-semibold mb-3 text-base">Bill To</h3>
+                <div className="rounded border p-4 text-sm space-y-1.5 bg-white">
+                  {order.name && <p className="font-semibold text-gray-900">{order.name}</p>}
+                  {order.address && <p className="text-gray-700">{order.address}</p>}
+                  {order.streetAddress && (
+                    <p className="text-gray-700">{order.streetAddress}</p>
                   )}
-                  <p className="text-muted-foreground">{order.shipping?.city}, {order.shipping?.state} {order.shipping?.pincode}</p>
-                  <p>{order.shipping?.phone}</p>
+                  {(order.city || order.state || order.pincode) && (
+                    <p className="text-gray-700">{[order.city, order.state, order.pincode].filter(Boolean).join(' - ')}</p>
+                  )}
+                  {order.phone && <p className="text-gray-700 pt-1">📞 {order.phone}</p>}
                 </div>
               </div>
             </div>
@@ -165,15 +167,21 @@ export default function AdminInvoice() {
                       <tr key={idx} className="border-b last:border-0">
                         <td className="py-2">
                           <div className="flex items-center gap-3">
-                            <img src={it.image || '/placeholder.svg'} className="w-10 h-10 object-cover rounded" />
-                            <div>
-                              <div className="font-medium">{it.title}</div>
-                              <div className="text-xs text-muted-foreground space-y-0.5">
+                            <img src={it.image || '/placeholder.svg'} alt={it.title} className="w-12 h-12 object-cover rounded" />
+                            <div className="flex-1">
+                              <div className="font-semibold text-gray-900">{it.title}</div>
+                              <div className="text-xs text-gray-600 space-y-1 mt-1">
                                 {(it.variant?.size || it.size) && (
-                                  <div>Size: {it.variant?.size || it.size}</div>
+                                  <div className="flex gap-2">
+                                    <span className="font-medium">Size:</span>
+                                    <span className="text-gray-700">{it.variant?.size || it.size}</span>
+                                  </div>
                                 )}
                                 {(it.variant?.color || it.color) && (
-                                  <div>Color: {it.variant?.color || it.color}</div>
+                                  <div className="flex gap-2">
+                                    <span className="font-medium">Color:</span>
+                                    <span className="text-gray-700 capitalize">{it.variant?.color || it.color}</span>
+                                  </div>
                                 )}
                               </div>
                             </div>
