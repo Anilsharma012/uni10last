@@ -492,6 +492,13 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
             onChange={(e) => setAddress(e.target.value)}
             className={fieldBase}
           />
+          {/* ✅ NEW STREET ADDRESS FIELD */}
+          <input
+            placeholder="Street Address *"
+            value={streetAddress}
+            onChange={(e) => setStreetAddress(e.target.value)}
+            className={fieldBase}
+          />
           {/* ⭐ NEW LANDMARK FIELD */}
           <input
             placeholder="Landmark (optional)"
