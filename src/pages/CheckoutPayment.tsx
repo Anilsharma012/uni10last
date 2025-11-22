@@ -66,6 +66,7 @@ const CheckoutPayment = () => {
     name: localStorage.getItem('userName') || '',
     phone: localStorage.getItem('userPhone') || '',
     address: localStorage.getItem('userAddress') || '',
+    streetAddress: localStorage.getItem('userStreetAddress') || '',
     city: localStorage.getItem('userCity') || '',
     state: localStorage.getItem('userState') || '',
     pincode: localStorage.getItem('userPincode') || '',
@@ -149,6 +150,18 @@ const CheckoutPayment = () => {
       fetchShippingCharges(customerDetails.pincode);
     }
   }, [customerDetails.pincode]);
+
+  // Save customer details to localStorage
+  useEffect(() => {
+    localStorage.setItem('userName', customerDetails.name);
+    localStorage.setItem('userPhone', customerDetails.phone);
+    localStorage.setItem('userAddress', customerDetails.address);
+    localStorage.setItem('userStreetAddress', customerDetails.streetAddress);
+    localStorage.setItem('userCity', customerDetails.city);
+    localStorage.setItem('userState', customerDetails.state);
+    localStorage.setItem('userPincode', customerDetails.pincode);
+    localStorage.setItem('userLandmark', customerDetails.landmark);
+  }, [customerDetails]);
 
   const fetchPaymentSettings = async () => {
     try {
@@ -240,6 +253,7 @@ const CheckoutPayment = () => {
           name: customerDetails.name,
           phone: customerDetails.phone,
           address: customerDetails.address,
+          streetAddress: customerDetails.streetAddress,
           city: customerDetails.city,
           state: customerDetails.state,
           pincode: customerDetails.pincode,
@@ -262,6 +276,7 @@ const CheckoutPayment = () => {
             name: customerDetails.name,
             phone: customerDetails.phone,
             address: customerDetails.address,
+            streetAddress: customerDetails.streetAddress,
             city: customerDetails.city,
             state: customerDetails.state,
             pincode: customerDetails.pincode,
@@ -276,6 +291,7 @@ const CheckoutPayment = () => {
               qty: i.qty,
               image: i.image,
               size: i.meta?.size,
+              color: i.meta?.color,
             })),
           } as any;
           localStorage.setItem('uni_orders_v1', JSON.stringify([order, ...arr]));
@@ -349,9 +365,17 @@ const CheckoutPayment = () => {
         body: JSON.stringify({
           amount: totalWithShipping,
           currency: 'INR',
-          items,
+          items: items.map(i => ({ ...i, color: i.meta?.color })),
           appliedCoupon,
           shipping: shippingCharges,
+          streetAddress: customerDetails.streetAddress,
+          name: customerDetails.name,
+          phone: customerDetails.phone,
+          address: customerDetails.address,
+          city: customerDetails.city,
+          state: customerDetails.state,
+          pincode: customerDetails.pincode,
+          landmark: customerDetails.landmark,
         }),
       });
 
@@ -423,6 +447,7 @@ const CheckoutPayment = () => {
                 name: customerDetails.name,
                 phone: customerDetails.phone,
                 address: customerDetails.address,
+                streetAddress: customerDetails.streetAddress,
                 city: customerDetails.city,
                 state: customerDetails.state,
                 pincode: customerDetails.pincode,
@@ -438,6 +463,7 @@ const CheckoutPayment = () => {
                   qty: i.qty,
                   image: i.image,
                   size: i.meta?.size,
+                  color: i.meta?.color,
                 })),
               } as any;
               localStorage.setItem('uni_orders_v1', JSON.stringify([order, ...arr]));
@@ -532,11 +558,12 @@ const CheckoutPayment = () => {
           transactionId: upiTransactionId.trim(),
           amount: totalWithShipping,
           paymentMethod: 'UPI',
-          items: items.map(i => ({ id: i.id, title: i.title, price: i.price, qty: i.qty, image: i.image, size: i.meta?.size, productId: i.id })),
+          items: items.map(i => ({ id: i.id, title: i.title, price: i.price, qty: i.qty, image: i.image, size: i.meta?.size, color: i.meta?.color, productId: i.id })),
           appliedCoupon,
           name: customerDetails.name,
           phone: customerDetails.phone,
           address: customerDetails.address,
+          streetAddress: customerDetails.streetAddress,
           city: customerDetails.city,
           state: customerDetails.state,
           pincode: customerDetails.pincode,
@@ -648,13 +675,23 @@ const CheckoutPayment = () => {
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <Label htmlFor="address">Street Address *</Label>
+                  <Label htmlFor="address">Address *</Label>
                   <Input
                     id="address"
                     type="text"
-                    placeholder="House number, street name"
+                    placeholder="Apartment, building, sector"
                     value={customerDetails.address}
                     onChange={(e) => setCustomerDetails({ ...customerDetails, address: e.target.value })}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Label htmlFor="streetAddress">Street Address *</Label>
+                  <Input
+                    id="streetAddress"
+                    type="text"
+                    placeholder="House number, street name"
+                    value={customerDetails.streetAddress}
+                    onChange={(e) => setCustomerDetails({ ...customerDetails, streetAddress: e.target.value })}
                   />
                 </div>
                 <div>

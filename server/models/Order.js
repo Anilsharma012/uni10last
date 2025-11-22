@@ -8,6 +8,7 @@ const OrderItemSchema = new mongoose.Schema({
   image: String,
   variant: Object,
   size: String,
+  color: String,
   productId: String,
 });
 
@@ -17,6 +18,7 @@ const OrderSchema = new mongoose.Schema(
     name: { type: String },
     phone: { type: String },
     address: { type: String },
+    streetAddress: { type: String, default: '' },
     city: { type: String, default: '' },
     state: { type: String, default: '' },
     pincode: { type: String, default: '' },

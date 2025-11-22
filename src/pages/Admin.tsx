@@ -4082,15 +4082,15 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                 <div className="border rounded-md p-3">
                   <h4 className="font-semibold mb-2">Shipping</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                    <div><span className="text-muted-foreground">Name:</span> {orderDetail.shipping?.name || '-'}</div>
-                    <div><span className="text-muted-foreground">Phone:</span> {orderDetail.shipping?.phone || '-'}</div>
-                    <div className="md:col-span-2"><span className="text-muted-foreground">Address 1:</span> {orderDetail.shipping?.address1 || '-'}</div>
-                    {orderDetail.shipping?.address2 && (
-                      <div className="md:col-span-2"><span className="text-muted-foreground">Address 2:</span> {orderDetail.shipping?.address2}</div>
+                    <div><span className="text-muted-foreground">Name:</span> {orderDetail.shipping?.name || orderDetail.name || '-'}</div>
+                    <div><span className="text-muted-foreground">Phone:</span> {orderDetail.shipping?.phone || orderDetail.phone || '-'}</div>
+                    <div className="md:col-span-2"><span className="text-muted-foreground">Address:</span> {orderDetail.shipping?.address1 || orderDetail.address || '-'}</div>
+                    {(orderDetail.shipping?.address2 || orderDetail.streetAddress) && (
+                      <div className="md:col-span-2"><span className="text-muted-foreground">Street Address:</span> {orderDetail.shipping?.address2 || orderDetail.streetAddress}</div>
                     )}
-                    <div><span className="text-muted-foreground">City:</span> {orderDetail.shipping?.city || '-'}</div>
-                    <div><span className="text-muted-foreground">State:</span> {orderDetail.shipping?.state || '-'}</div>
-                    <div><span className="text-muted-foreground">Pincode:</span> {orderDetail.shipping?.pincode || '-'}</div>
+                    <div><span className="text-muted-foreground">City:</span> {orderDetail.shipping?.city || orderDetail.city || '-'}</div>
+                    <div><span className="text-muted-foreground">State:</span> {orderDetail.shipping?.state || orderDetail.state || '-'}</div>
+                    <div><span className="text-muted-foreground">Pincode:</span> {orderDetail.shipping?.pincode || orderDetail.pincode || '-'}</div>
                     {(orderDetail.shipping?.landmark || orderDetail.landmark) && (
                       <div className="md:col-span-2"><span className="text-muted-foreground">Landmark:</span> {orderDetail.shipping?.landmark || orderDetail.landmark}</div>
                     )}
@@ -4109,7 +4109,11 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                         />
                         <div className="flex-1">
                           <div className="font-medium">{it.title}</div>
-                          <div className="text-xs text-muted-foreground">{it.variant?.size ? `Size: ${it.variant.size}` : ''}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {it.variant?.size ? `Size: ${it.variant.size}` : it.size ? `Size: ${it.size}` : ''}
+                            {(it.variant?.size || it.size) && (it.variant?.color || it.color) ? ' • ' : ''}
+                            {it.variant?.color ? `Color: ${it.variant.color}` : it.color ? `Color: ${it.color}` : ''}
+                          </div>
                         </div>
                         <div className="text-sm tabular-nums">{it.qty} × ���₹{Number(it.price || 0).toLocaleString('en-IN')}</div>
                         <div className="w-20 text-right font-semibold">₹{(Number(it.qty || 0) * Number(it.price || 0)).toLocaleString('en-IN')}</div>
