@@ -7,6 +7,7 @@ export type CartItem = {
   image?: string;
   qty: number;
   meta?: Record<string, any>;
+  cartKey?: string; // Unique key for cart item including variants
 };
 
 export type AppliedCoupon = {
