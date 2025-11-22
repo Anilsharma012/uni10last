@@ -64,7 +64,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setItems((prev) => {
       const existing = prev.find((p) => p.id === item.id && JSON.stringify(p.meta || {}) === JSON.stringify(item.meta || {}));
       if (existing) {
-        return prev.map((p) => (p.id === existing.id ? { ...p, qty: p.qty + qty } : p));
+        return prev.map((p) => (p.id === existing.id && JSON.stringify(p.meta || {}) === JSON.stringify(item.meta || {}) ? { ...p, qty: p.qty + qty } : p));
       }
       return [...prev, { ...item, qty }];
     });
