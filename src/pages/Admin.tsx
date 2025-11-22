@@ -2949,6 +2949,34 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                       ₹{Number((order as any).total ?? (order as any).total_amount ?? 0).toLocaleString('en-IN')}
                     </p>
                   </div>
+                  {(() => {
+                    const itemsCount = (order.items || []).length;
+                    const singleItem = itemsCount === 1 ? order.items[0] : null;
+                    return (
+                      <div className="text-sm text-muted-foreground hidden sm:block flex-1 px-4">
+                        {singleItem ? (
+                          <div className="space-y-0.5">
+                            {(singleItem.size || singleItem.variant?.size) && (
+                              <div>Size: {singleItem.size || singleItem.variant?.size}</div>
+                            )}
+                            {(singleItem.color || singleItem.variant?.color) && (
+                              <div>Color: {singleItem.color || singleItem.variant?.color}</div>
+                            )}
+                            {!singleItem.size && !singleItem.color && !singleItem.variant?.size && !singleItem.variant?.color && (
+                              <div className="text-xs italic">N/A</div>
+                            )}
+                          </div>
+                        ) : itemsCount > 1 ? (
+                          <div className="text-xs">
+                            <div className="font-medium">{itemsCount} items</div>
+                            <div className="italic">see details for sizes/colors</div>
+                          </div>
+                        ) : (
+                          <div className="text-xs italic">N/A</div>
+                        )}
+                      </div>
+                    );
+                  })()}
                   <div className="flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
                     {(() => {
                       const orderId = String((order._id || order.id) as any);
