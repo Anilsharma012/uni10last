@@ -45,7 +45,11 @@ function readStorage(): CartItem[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_KEY);
     if (!raw) return [];
-    return JSON.parse(raw) as CartItem[];
+    const items = JSON.parse(raw) as CartItem[];
+    return items.map(item => ({
+      ...item,
+      cartKey: item.cartKey || generateCartKey(item.id, item.meta)
+    }));
   } catch (e) {
     console.error("Failed to read cart from storage", e);
     return [];
