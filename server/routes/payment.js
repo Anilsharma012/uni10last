@@ -243,6 +243,7 @@ router.post('/verify', requireAuth, async (req, res) => {
         name: name || req.user.name,
         phone: phone || req.user.phone,
         address: address || req.user.address1,
+        streetAddress: streetAddress || '',
         city: city || req.user.city,
         state: state || req.user.state,
         pincode: pincode || req.user.pincode,
