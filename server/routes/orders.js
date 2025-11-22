@@ -17,6 +17,7 @@ router.post('/', authOptional, async (req, res) => {
     const name = body.name || body.customer?.name || '';
     const phone = body.phone || body.customer?.phone || '';
     const address = body.address || body.customer?.address || '';
+    const streetAddress = body.streetAddress || body.customer?.streetAddress || '';
     const city = body.city || body.customer?.city || '';
     const state = body.state || body.customer?.state || '';
     const pincode = body.pincode || body.customer?.pincode || '';
