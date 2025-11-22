@@ -135,6 +135,8 @@ router.get('/orders/:id', requireAuth, requireAdmin, async (req, res) => {
             image: it.image || '',
             price: Number(it.price || 0),
             qty: Number(it.qty || 0),
+            size: it.size || (it.variant?.size ? it.variant.size : undefined),
+            color: it.color || (it.variant?.color ? it.variant.color : undefined),
             variant: it.variant || null,
           }))
         : [],
