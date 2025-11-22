@@ -264,6 +264,7 @@ const CheckoutPayment = () => {
             name: customerDetails.name,
             phone: customerDetails.phone,
             address: customerDetails.address,
+            streetAddress: customerDetails.streetAddress,
             city: customerDetails.city,
             state: customerDetails.state,
             pincode: customerDetails.pincode,
@@ -278,6 +279,7 @@ const CheckoutPayment = () => {
               qty: i.qty,
               image: i.image,
               size: i.meta?.size,
+              color: i.meta?.color,
             })),
           } as any;
           localStorage.setItem('uni_orders_v1', JSON.stringify([order, ...arr]));
