@@ -52,6 +52,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ImageUploader } from '@/components/ImageUploader';
 import slugify from 'slugify';
 
 
