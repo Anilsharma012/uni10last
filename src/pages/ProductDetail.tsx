@@ -32,6 +32,7 @@ import { SizeChartTableModal } from "@/components/SizeChartTableModal";
 import { ReviewModal } from "@/components/ReviewModal";
 import ReviewsList from "@/components/ReviewsList";
 import { AvailableCoupons } from "@/components/AvailableCoupons";
+import { ProductImageGallery } from "@/components/ProductImageGallery";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 const resolveImage = (src?: string) => {
@@ -454,27 +455,10 @@ const ProductDetail = () => {
         </Link>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-12">
-          <div className="aspect-square bg-secondary rounded-lg overflow-hidden">
-            <img
-              src={img}
-              alt={title}
-              className="w-full h-full object-cover"
-              loading="eager"
-              onError={(e) => {
-                try {
-                  const el = e.currentTarget as HTMLImageElement;
-                  const cur = String(el.src || "");
-                  const candidate = cur.includes("/api/uploads")
-                    ? cur.replace("/api/uploads", "/uploads")
-                    : cur.includes("/uploads")
-                    ? `/api${cur}`
-                    : "/placeholder.svg";
-                  if (candidate !== cur) el.src = candidate;
-                  else el.src = "/placeholder.svg";
-                } catch {
-                  e.currentTarget.src = "/placeholder.svg";
-                }
-              }}
+          <div>
+            <ProductImageGallery
+              images={product?.images || []}
+              productTitle={title}
             />
           </div>
 

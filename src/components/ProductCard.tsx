@@ -14,17 +14,20 @@ interface ProductCardProps {
   image: string;
   category: string;
   to?: string;
+  images?: string[];
 }
 
-export const ProductCard = ({ id, name, price, image, category, to }: ProductCardProps) => {
+export const ProductCard = ({ id, name, price, image, category, to, images }: ProductCardProps) => {
   const { user } = useAuth();
   const { addToCart } = (() => { try { return useCart(); } catch { return { addToCart: () => {} } as any; } })();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const navigate = useNavigate();
 
+  const primaryImage = images && images.length > 0 ? images[0] : image;
+
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
-    const item = { id, title: name, price, image };
+    const item = { id, title: name, price, image: primaryImage };
     if (!user) {
       try {
         localStorage.setItem('uni_add_intent', JSON.stringify({ item, qty: 1 }));
@@ -38,7 +41,7 @@ export const ProductCard = ({ id, name, price, image, category, to }: ProductCar
 
   const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL || '';
   const src = (() => {
-    const s = String(image || '');
+    const s = String(primaryImage || '');
     if (!s) return '/placeholder.svg';
     if (s.startsWith('http')) return s;
     // Only prefix backend for uploaded assets; avoid mixed-content by not prefixing localhost on https pages

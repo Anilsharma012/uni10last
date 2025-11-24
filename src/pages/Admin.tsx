@@ -52,6 +52,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { ImageUploader } from '@/components/ImageUploader';
 import slugify from 'slugify';
 
 
@@ -372,6 +373,7 @@ type ProductFormState = {
   description: string;
   price: number;
   image_url: string;
+  images: string[];
   categoryId: string;
   subcategoryId: string;
   stock: number;
@@ -386,7 +388,7 @@ type ProductFormState = {
     guidelines: string;
     diagramUrl: string;
   };
-  colors: string[];  // 👈 yahan add kiya hai color field
+  colors: string[];
   highlights: string[];
   longDescription: string;
   specs: Array<{ key: string; value: string }>;
@@ -397,6 +399,7 @@ const EMPTY_FORM: ProductFormState = {
   description: '',
   price: 0,
   image_url: '',
+  images: [],
   categoryId: '',
   subcategoryId: '',
   stock: 0,
@@ -411,7 +414,7 @@ const EMPTY_FORM: ProductFormState = {
     guidelines: '',
     diagramUrl: '',
   },
-  colors: [],                    // 👈 NEW
+  colors: [],
   highlights: [],
   longDescription: '',
   specs: [],
@@ -633,6 +636,7 @@ const Admin = () => {
     description: product.description ?? product.attributes?.description ?? '',
     price: Number(product.price ?? 0),
     image_url: product.image_url ?? (Array.isArray(product.images) ? product.images[0] : '') ?? '',
+    images: Array.isArray(product.images) ? product.images : [],
     categoryId: (product as any).categoryId || '',
     subcategoryId: (product as any).subcategoryId || '',
     stock: Number(product.stock ?? 0),
@@ -649,13 +653,11 @@ const Admin = () => {
       guidelines: '',
       diagramUrl: '',
     },
-    colors: Array.isArray((product as any).colors)                     // 👈 NEW
+    colors: Array.isArray((product as any).colors)
       ? (product as any).colors
       : (Array.isArray((product as any).attributes?.colors)
           ? (product as any).attributes.colors
           : []),
-  
-    
     highlights: Array.isArray(product.highlights) ? product.highlights : [],
     longDescription: product.longDescription ?? '',
     specs: Array.isArray(product.specs) ? product.specs : [],
@@ -1138,10 +1140,7 @@ const Admin = () => {
     }
   };
 
-  const uploadFile = async (file: File) => {
-    if (!file) return;
-    setUploadingImage(true);
-
+  const getUploadUrl = async (file: File): Promise<string> => {
     const isLocalhost = (url: string) => {
       try {
         return url.includes('localhost') || url.includes('127.0.0.1');
@@ -1149,7 +1148,6 @@ const Admin = () => {
         return false;
       }
     };
-
 
     const tryUpload = async (uploadUrl: string) => {
       const fd = new FormData();
@@ -1169,7 +1167,6 @@ const Admin = () => {
         if (!res.ok) throw new Error(json?.message || json?.error || `${res.status} ${res.statusText}`);
         return json;
       } catch (err: any) {
-        // wrap network errors so callers can inspect message
         throw new Error(err?.message || String(err));
       }
     };
@@ -1179,45 +1176,33 @@ const Admin = () => {
       const baseNormalized = base.endsWith('/') ? base.slice(0, -1) : base;
       const primaryUrl = base ? `${baseNormalized}/api/uploads` : '';
 
-      // If API_BASE points to localhost but frontend isn't on localhost, try relative '/api/uploads' first
       if (base && isLocalhost(base) && !location.hostname.includes('localhost') && !location.hostname.includes('127.0.0.1')) {
         try {
           const relJson = await tryUpload('/api/uploads');
           const url = relJson?.url || relJson?.data?.url;
-          const full = url && url.startsWith('http') ? url : (url ? url : '/placeholder.svg');
-          setProductForm((p) => ({ ...p, image_url: full }));
-          toast.success('Image uploaded (via relative /api fallback)');
-          return;
+          return url && url.startsWith('http') ? url : (url ? url : '/placeholder.svg');
         } catch (relErr) {
           console.warn('Relative upload failed, falling back to API_BASE upload:', relErr?.message || relErr);
         }
       }
 
-      // Try primary API_BASE upload (if configured)
       if (primaryUrl) {
         try {
           const json = await tryUpload(primaryUrl);
           const url = json?.url || json?.data?.url;
           if (url) {
-            const full = url.startsWith('http') ? url : `${baseNormalized}${url}`;
-            setProductForm((p) => ({ ...p, image_url: full }));
-            toast.success('Image uploaded');
-            return;
+            return url.startsWith('http') ? url : `${baseNormalized}${url}`;
           }
         } catch (primaryErr: any) {
           console.warn('Primary upload failed:', primaryErr?.message || primaryErr);
 
-          // If failure looks like mixed-content (https page -> http API), attempt to retry with page protocol
           try {
             if (primaryUrl.startsWith('http:') && location.protocol === 'https:') {
               const httpsUrl = primaryUrl.replace(/^http:/, 'https:');
               const json2 = await tryUpload(httpsUrl);
               const url2 = json2?.url || json2?.data?.url;
               if (url2) {
-                const full = url2.startsWith('http') ? url2 : `${httpsUrl}${url2}`;
-                setProductForm((p) => ({ ...p, image_url: full }));
-                toast.success('Image uploaded (via https fallback)');
-                return;
+                return url2.startsWith('http') ? url2 : `${httpsUrl}${url2}`;
               }
             }
           } catch (httpsErr: any) {
@@ -1226,26 +1211,32 @@ const Admin = () => {
         }
       }
 
-      // Last resort: try relative '/api/uploads' (useful when frontend and backend are co-hosted)
       try {
         const relJson2 = await tryUpload('/api/uploads');
         const url = relJson2?.url || relJson2?.data?.url;
-        const full = url && url.startsWith('http') ? url : (url ? url : '/placeholder.svg');
-        setProductForm((p) => ({ ...p, image_url: full }));
-        toast.success('Image uploaded (via relative /api)');
-        return;
+        return url && url.startsWith('http') ? url : (url ? url : '/placeholder.svg');
       } catch (finalRelErr) {
         console.warn('Relative /api upload failed as last resort:', finalRelErr?.message || finalRelErr);
       }
 
-      // No url returned — use placeholder
-      setProductForm((p) => ({ ...p, image_url: '/placeholder.svg' }));
-      toast.warning('Upload did not return a URL; using placeholder image');
+      return '/placeholder.svg';
     } catch (err: any) {
-      // Final fallback: use placeholder image so the UI remains functional in preview
-      setProductForm((p) => ({ ...p, image_url: '/placeholder.svg' }));
+      console.warn('getUploadUrl error:', err);
+      return '/placeholder.svg';
+    }
+  };
+
+  const uploadFile = async (file: File) => {
+    if (!file) return;
+    setUploadingImage(true);
+
+    try {
+      const url = await getUploadUrl(file);
+      setProductForm((p) => ({ ...p, image_url: url }));
+      toast.success('Image uploaded');
+    } catch (err: any) {
       toast.error(err?.message || 'Image upload failed — using placeholder');
-      console.warn('uploadFile error:', err);
+      setProductForm((p) => ({ ...p, image_url: '/placeholder.svg' }));
     } finally {
       setUploadingImage(false);
     }
@@ -1400,6 +1391,7 @@ const handleProductSubmit = async (e: React.FormEvent) => {
         description: productForm.description.trim(),
         price,
         image_url: productForm.image_url.trim(),
+        images: Array.isArray(productForm.images) ? productForm.images.filter(img => img?.trim()) : [],
         stock,
         sizes: Array.isArray(productForm.sizes) ? productForm.sizes : [],
         trackInventoryBySize: productForm.trackInventoryBySize,
@@ -1407,7 +1399,7 @@ const handleProductSubmit = async (e: React.FormEvent) => {
         sizeChart: sizeChartPayload,
         categoryId: (productForm as any).categoryId || undefined,
         subcategoryId: (productForm as any).subcategoryId || undefined,
-         colors: Array.isArray(productForm.colors)                     // 👈 NEW
+        colors: Array.isArray(productForm.colors)
           ? productForm.colors.filter((c) => c.trim())
           : [],
         highlights: Array.isArray(productForm.highlights) ? productForm.highlights.filter(h => h.trim()) : [],
@@ -2216,31 +2208,29 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                 </div>
               </div>
               <div>
-                <Label htmlFor="image_url">Image URL</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="image_url"
-                    value={productForm.image_url}
-                    onChange={(e) => setProductForm((p) => ({ ...p, image_url: e.target.value }))}
-                    required
-                  />
-                  <div className="flex items-center gap-2">
-                    <input
-                      id="image_file"
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        if (f) void uploadFile(f);
-                        e.currentTarget.value = '';
-                      }}
-                    />
-                    <Button type="button" onClick={() => document.getElementById('image_file')?.click()} disabled={uploadingImage}>
-                      {uploadingImage ? 'Uploading...' : 'Upload'}
-                    </Button>
-                  </div>
-                </div>
+                <Label>Product Images</Label>
+                <ImageUploader
+                  images={productForm.images}
+                  onImagesChange={(imgs) => setProductForm((p) => ({
+                    ...p,
+                    images: imgs,
+                    image_url: imgs.length > 0 ? imgs[0] : ''
+                  }))}
+                  onUpload={async (files) => {
+                    const uploadedUrls: string[] = [];
+                    for (const file of files) {
+                      try {
+                        const url = await getUploadUrl(file);
+                        uploadedUrls.push(url);
+                      } catch (err) {
+                        console.error('Failed to upload file:', err);
+                      }
+                    }
+                    return uploadedUrls;
+                  }}
+                  isLoading={uploadingImage}
+                  maxImages={10}
+                />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
