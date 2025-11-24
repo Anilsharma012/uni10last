@@ -2220,15 +2220,8 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                     const uploadedUrls: string[] = [];
                     for (const file of files) {
                       try {
-                        const result = await new Promise<string>((resolve, reject) => {
-                          const originalUploadFile = uploadFile;
-                          uploadFile(file).then(() => {
-                            const url = productForm.image_url;
-                            if (url) resolve(url);
-                            else reject(new Error('Upload failed'));
-                          }).catch(reject);
-                        });
-                        uploadedUrls.push(result);
+                        const url = await getUploadUrl(file);
+                        uploadedUrls.push(url);
                       } catch (err) {
                         console.error('Failed to upload file:', err);
                       }
