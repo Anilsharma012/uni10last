@@ -1402,6 +1402,7 @@ const handleProductSubmit = async (e: React.FormEvent) => {
         description: productForm.description.trim(),
         price,
         image_url: productForm.image_url.trim(),
+        images: Array.isArray(productForm.images) ? productForm.images.filter(img => img?.trim()) : [],
         stock,
         sizes: Array.isArray(productForm.sizes) ? productForm.sizes : [],
         trackInventoryBySize: productForm.trackInventoryBySize,
@@ -1409,7 +1410,7 @@ const handleProductSubmit = async (e: React.FormEvent) => {
         sizeChart: sizeChartPayload,
         categoryId: (productForm as any).categoryId || undefined,
         subcategoryId: (productForm as any).subcategoryId || undefined,
-         colors: Array.isArray(productForm.colors)                     // 👈 NEW
+        colors: Array.isArray(productForm.colors)
           ? productForm.colors.filter((c) => c.trim())
           : [],
         highlights: Array.isArray(productForm.highlights) ? productForm.highlights.filter(h => h.trim()) : [],
