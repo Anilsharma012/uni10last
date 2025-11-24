@@ -657,8 +657,29 @@ const Admin = () => {
     sizeInventory: Array.isArray(product.sizeInventory) ? product.sizeInventory : [],
     sizeChartUrl: product.sizeChartUrl ?? '',
     sizeChartTitle: product.sizeChartTitle ?? '',
-    sizeChart: product.sizeChart ?? {
+    sizeChart: product.sizeChart ? {
+      title: product.sizeChart.title ?? '',
+      fieldLabels: product.sizeChart.fieldLabels ?? {
+        chest: 'Chest',
+        waist: 'Waist',
+        length: 'Length',
+      },
+      rows: (product.sizeChart.rows ?? []).map((row: any) => ({
+        sizeLabel: row.sizeLabel ?? '',
+        chest: row.chest ?? '',
+        waist: row.waist ?? row.brandSize ?? '',
+        length: row.length ?? '',
+        brandSize: row.brandSize,
+      })),
+      guidelines: product.sizeChart.guidelines ?? '',
+      diagramUrl: product.sizeChart.diagramUrl ?? '',
+    } : {
       title: '',
+      fieldLabels: {
+        chest: 'Chest',
+        waist: 'Waist',
+        length: 'Length',
+      },
       rows: [],
       guidelines: '',
       diagramUrl: '',
