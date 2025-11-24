@@ -384,7 +384,12 @@ type ProductFormState = {
   sizeChartTitle: string;
   sizeChart: {
     title: string;
-    rows: Array<{ sizeLabel: string; chest: string; brandSize: string }>;
+    fieldLabels: {
+      chest: string;
+      waist: string;
+      length: string;
+    };
+    rows: Array<{ sizeLabel: string; chest: string; waist: string; length: string; brandSize?: string }>;
     guidelines: string;
     diagramUrl: string;
   };
