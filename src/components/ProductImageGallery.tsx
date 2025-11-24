@@ -75,15 +75,6 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   const mainImage = validImages[selectedIndex];
   const hasMultiple = validImages.length > 1;
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isZoomed || isMobile) return;
-
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    setMousePos({ x, y });
-  };
-
   const handlePrevThumbnail = () => {
     if (thumbScrollPos > 0) {
       setThumbScrollPos(Math.max(0, thumbScrollPos - 100));
