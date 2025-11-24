@@ -43,8 +43,6 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   productTitle = 'Product',
 }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [isZoomed, setIsZoomed] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isMobile, setIsMobile] = useState(false);
   const [thumbScrollPos, setThumbScrollPos] = useState(0);
 
