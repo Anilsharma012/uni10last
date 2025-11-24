@@ -36,11 +36,16 @@ const ProductSchema = new mongoose.Schema(
     sizeChart: {
       type: {
         title: { type: String },
+        fields: [
+          {
+            name: { type: String },
+            label: { type: String }
+          }
+        ],
         rows: [
           {
             sizeLabel: { type: String },
-            chest: { type: String },
-            brandSize: { type: String }
+            measurements: { type: Map, of: String }
           }
         ],
         guidelines: { type: String },
