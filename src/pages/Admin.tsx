@@ -635,6 +635,7 @@ const Admin = () => {
     description: product.description ?? product.attributes?.description ?? '',
     price: Number(product.price ?? 0),
     image_url: product.image_url ?? (Array.isArray(product.images) ? product.images[0] : '') ?? '',
+    images: Array.isArray(product.images) ? product.images : [],
     categoryId: (product as any).categoryId || '',
     subcategoryId: (product as any).subcategoryId || '',
     stock: Number(product.stock ?? 0),
@@ -651,13 +652,11 @@ const Admin = () => {
       guidelines: '',
       diagramUrl: '',
     },
-    colors: Array.isArray((product as any).colors)                     // 👈 NEW
+    colors: Array.isArray((product as any).colors)
       ? (product as any).colors
       : (Array.isArray((product as any).attributes?.colors)
           ? (product as any).attributes.colors
           : []),
-  
-    
     highlights: Array.isArray(product.highlights) ? product.highlights : [],
     longDescription: product.longDescription ?? '',
     specs: Array.isArray(product.specs) ? product.specs : [],
