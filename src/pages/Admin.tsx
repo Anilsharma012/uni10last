@@ -1409,8 +1409,18 @@ const handleProductSubmit = async (e: React.FormEvent) => {
       const sizeChartPayload = sizeChartData && (sizeChartData.title.trim() || sizeChartData.rows?.length > 0 || sizeChartData.guidelines.trim())
         ? {
             title: sizeChartData.title.trim() || undefined,
+            fieldLabels: {
+              chest: sizeChartData.fieldLabels?.chest?.trim() || 'Chest',
+              waist: sizeChartData.fieldLabels?.waist?.trim() || 'Waist',
+              length: sizeChartData.fieldLabels?.length?.trim() || 'Length',
+            },
             rows: Array.isArray(sizeChartData.rows)
-              ? sizeChartData.rows.filter(r => r.sizeLabel?.trim())
+              ? sizeChartData.rows.filter(r => r.sizeLabel?.trim()).map(r => ({
+                  sizeLabel: r.sizeLabel?.trim(),
+                  chest: r.chest?.trim(),
+                  waist: r.waist?.trim(),
+                  length: r.length?.trim(),
+                }))
               : [],
             guidelines: sizeChartData.guidelines.trim() || undefined,
             diagramUrl: sizeChartData.diagramUrl?.trim() || undefined,
