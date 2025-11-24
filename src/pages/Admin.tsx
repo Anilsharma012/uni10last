@@ -415,6 +415,11 @@ const EMPTY_FORM: ProductFormState = {
   sizeChartTitle: '',
   sizeChart: {
     title: '',
+    fieldLabels: {
+      chest: 'Chest',
+      waist: 'Waist',
+      length: 'Length',
+    },
     rows: [],
     guidelines: '',
     diagramUrl: '',
