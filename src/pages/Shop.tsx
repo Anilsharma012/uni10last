@@ -269,6 +269,7 @@ const Shop = ({ sortBy = "all", collectionSlug }: ShopPageProps = {}) => {
                     price={Number(p.price || 0)}
                     image={img}
                     category={p.category || ""}
+                    images={p.images}
                   />
                 );
               })}
