@@ -555,13 +555,13 @@ const ProductDetail = () => {
                       )
                     )}
                   </div>
-                  <div className="flex flex-wrap gap-2 sm:gap-3">
+                  <div className="flex flex-wrap gap-2 sm:gap-3 pb-10 sm:pb-12">
                     {product.sizeInventory.map((sizeItem) => {
                       const isOutOfStock = sizeItem.qty === 0;
                       const isLowStock =
                         sizeItem.qty > 0 && sizeItem.qty <= 3;
                       return (
-                        <div key={sizeItem.code} className="relative">
+                        <div key={sizeItem.code} className="relative pb-6 sm:pb-7">
                           <button
                             type="button"
                             disabled={isOutOfStock}
@@ -853,7 +853,7 @@ const ProductDetail = () => {
                               className="flex items-start gap-2 sm:gap-3"
                             >
                               <span className="text-primary mt-0.5 flex-shrink-0">
-                                •
+                                ���
                               </span>
                               <span className="text-xs sm:text-sm text-foreground">
                                 {highlight}

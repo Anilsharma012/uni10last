@@ -384,7 +384,12 @@ type ProductFormState = {
   sizeChartTitle: string;
   sizeChart: {
     title: string;
-    rows: Array<{ sizeLabel: string; chest: string; brandSize: string }>;
+    fieldLabels: {
+      chest: string;
+      waist: string;
+      length: string;
+    };
+    rows: Array<{ sizeLabel: string; chest: string; waist: string; length: string; brandSize?: string }>;
     guidelines: string;
     diagramUrl: string;
   };
@@ -410,6 +415,11 @@ const EMPTY_FORM: ProductFormState = {
   sizeChartTitle: '',
   sizeChart: {
     title: '',
+    fieldLabels: {
+      chest: 'Chest',
+      waist: 'Waist',
+      length: 'Length',
+    },
     rows: [],
     guidelines: '',
     diagramUrl: '',
@@ -647,8 +657,29 @@ const Admin = () => {
     sizeInventory: Array.isArray(product.sizeInventory) ? product.sizeInventory : [],
     sizeChartUrl: product.sizeChartUrl ?? '',
     sizeChartTitle: product.sizeChartTitle ?? '',
-    sizeChart: product.sizeChart ?? {
+    sizeChart: product.sizeChart ? {
+      title: product.sizeChart.title ?? '',
+      fieldLabels: product.sizeChart.fieldLabels ?? {
+        chest: 'Chest',
+        waist: 'Waist',
+        length: 'Length',
+      },
+      rows: (product.sizeChart.rows ?? []).map((row: any) => ({
+        sizeLabel: row.sizeLabel ?? '',
+        chest: row.chest ?? '',
+        waist: row.waist ?? row.brandSize ?? '',
+        length: row.length ?? '',
+        brandSize: row.brandSize,
+      })),
+      guidelines: product.sizeChart.guidelines ?? '',
+      diagramUrl: product.sizeChart.diagramUrl ?? '',
+    } : {
       title: '',
+      fieldLabels: {
+        chest: 'Chest',
+        waist: 'Waist',
+        length: 'Length',
+      },
       rows: [],
       guidelines: '',
       diagramUrl: '',
@@ -1378,8 +1409,18 @@ const handleProductSubmit = async (e: React.FormEvent) => {
       const sizeChartPayload = sizeChartData && (sizeChartData.title.trim() || sizeChartData.rows?.length > 0 || sizeChartData.guidelines.trim())
         ? {
             title: sizeChartData.title.trim() || undefined,
+            fieldLabels: {
+              chest: sizeChartData.fieldLabels?.chest?.trim() || 'Chest',
+              waist: sizeChartData.fieldLabels?.waist?.trim() || 'Waist',
+              length: sizeChartData.fieldLabels?.length?.trim() || 'Length',
+            },
             rows: Array.isArray(sizeChartData.rows)
-              ? sizeChartData.rows.filter(r => r.sizeLabel?.trim())
+              ? sizeChartData.rows.filter(r => r.sizeLabel?.trim()).map(r => ({
+                  sizeLabel: r.sizeLabel?.trim(),
+                  chest: r.chest?.trim(),
+                  waist: r.waist?.trim(),
+                  length: r.length?.trim(),
+                }))
               : [],
             guidelines: sizeChartData.guidelines.trim() || undefined,
             diagramUrl: sizeChartData.diagramUrl?.trim() || undefined,
@@ -2518,17 +2559,80 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                 </div>
 
                 <div>
+                  <Label className="mt-4 block">Field Labels (Customize measurement names)</Label>
+                  <div className="grid grid-cols-3 gap-2 mt-2 mb-4">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Chest Label</Label>
+                      <Input
+                        value={productForm.sizeChart.fieldLabels?.chest ?? 'Chest'}
+                        onChange={(e) => {
+                          setProductForm((p) => ({
+                            ...p,
+                            sizeChart: {
+                              ...p.sizeChart,
+                              fieldLabels: {
+                                ...p.sizeChart.fieldLabels,
+                                chest: e.target.value
+                              }
+                            }
+                          }));
+                        }}
+                        placeholder="e.g., Chest"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Waist Label</Label>
+                      <Input
+                        value={productForm.sizeChart.fieldLabels?.waist ?? 'Waist'}
+                        onChange={(e) => {
+                          setProductForm((p) => ({
+                            ...p,
+                            sizeChart: {
+                              ...p.sizeChart,
+                              fieldLabels: {
+                                ...p.sizeChart.fieldLabels,
+                                waist: e.target.value
+                              }
+                            }
+                          }));
+                        }}
+                        placeholder="e.g., Waist"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Length Label</Label>
+                      <Input
+                        value={productForm.sizeChart.fieldLabels?.length ?? 'Length'}
+                        onChange={(e) => {
+                          setProductForm((p) => ({
+                            ...p,
+                            sizeChart: {
+                              ...p.sizeChart,
+                              fieldLabels: {
+                                ...p.sizeChart.fieldLabels,
+                                length: e.target.value
+                              }
+                            }
+                          }));
+                        }}
+                        placeholder="e.g., Length"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
                   <Label className="mt-4 block">Size Chart Rows</Label>
                   <div className="space-y-3 mt-2">
                     {[...Array(Math.max(1, (productForm.sizeChart.rows?.length ?? 0) + 1))].map((_, idx) => (
-                      <div key={idx} className="grid grid-cols-3 gap-2 items-end">
+                      <div key={idx} className="grid grid-cols-5 gap-2 items-end">
                         <div>
                           <Label className="text-xs text-muted-foreground">Size Label</Label>
                           <Input
                             value={productForm.sizeChart.rows?.[idx]?.sizeLabel ?? ''}
                             onChange={(e) => {
                               const newRows = [...(productForm.sizeChart.rows ?? [])];
-                              if (!newRows[idx]) newRows[idx] = { sizeLabel: '', chest: '', brandSize: '' };
+                              if (!newRows[idx]) newRows[idx] = { sizeLabel: '', chest: '', waist: '', length: '' };
                               newRows[idx].sizeLabel = e.target.value;
                               setProductForm((p) => ({ ...p, sizeChart: { ...p.sizeChart, rows: newRows } }));
                             }}
@@ -2536,12 +2640,12 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                           />
                         </div>
                         <div>
-                          <Label className="text-xs text-muted-foreground">Chest</Label>
+                          <Label className="text-xs text-muted-foreground">{productForm.sizeChart.fieldLabels?.chest ?? 'Chest'}</Label>
                           <Input
                             value={productForm.sizeChart.rows?.[idx]?.chest ?? ''}
                             onChange={(e) => {
                               const newRows = [...(productForm.sizeChart.rows ?? [])];
-                              if (!newRows[idx]) newRows[idx] = { sizeLabel: '', chest: '', brandSize: '' };
+                              if (!newRows[idx]) newRows[idx] = { sizeLabel: '', chest: '', waist: '', length: '' };
                               newRows[idx].chest = e.target.value;
                               setProductForm((p) => ({ ...p, sizeChart: { ...p.sizeChart, rows: newRows } }));
                             }}
@@ -2549,16 +2653,29 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                           />
                         </div>
                         <div>
-                          <Label className="text-xs text-muted-foreground">Weist</Label>
+                          <Label className="text-xs text-muted-foreground">{productForm.sizeChart.fieldLabels?.waist ?? 'Waist'}</Label>
                           <Input
-                            value={productForm.sizeChart.rows?.[idx]?.brandSize ?? ''}
+                            value={productForm.sizeChart.rows?.[idx]?.waist ?? ''}
                             onChange={(e) => {
                               const newRows = [...(productForm.sizeChart.rows ?? [])];
-                              if (!newRows[idx]) newRows[idx] = { sizeLabel: '', chest: '', brandSize: '' };
-                              newRows[idx].brandSize = e.target.value;
+                              if (!newRows[idx]) newRows[idx] = { sizeLabel: '', chest: '', waist: '', length: '' };
+                              newRows[idx].waist = e.target.value;
                               setProductForm((p) => ({ ...p, sizeChart: { ...p.sizeChart, rows: newRows } }));
                             }}
-                            placeholder="e.g., M, L..."
+                            placeholder="e.g., 25-27 in"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">{productForm.sizeChart.fieldLabels?.length ?? 'Length'}</Label>
+                          <Input
+                            value={productForm.sizeChart.rows?.[idx]?.length ?? ''}
+                            onChange={(e) => {
+                              const newRows = [...(productForm.sizeChart.rows ?? [])];
+                              if (!newRows[idx]) newRows[idx] = { sizeLabel: '', chest: '', waist: '', length: '' };
+                              newRows[idx].length = e.target.value;
+                              setProductForm((p) => ({ ...p, sizeChart: { ...p.sizeChart, rows: newRows } }));
+                            }}
+                            placeholder="e.g., 28 in"
                           />
                         </div>
                         {productForm.sizeChart.rows?.[idx]?.sizeLabel && (
@@ -2575,9 +2692,9 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                                 },
                               }));
                             }}
-                            className="col-span-3"
+                            className="h-10"
                           >
-                            Remove Row
+                            Remove
                           </Button>
                         )}
                       </div>
