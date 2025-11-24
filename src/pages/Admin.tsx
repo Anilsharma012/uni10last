@@ -2219,31 +2219,36 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                 </div>
               </div>
               <div>
-                <Label htmlFor="image_url">Image URL</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="image_url"
-                    value={productForm.image_url}
-                    onChange={(e) => setProductForm((p) => ({ ...p, image_url: e.target.value }))}
-                    required
-                  />
-                  <div className="flex items-center gap-2">
-                    <input
-                      id="image_file"
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        if (f) void uploadFile(f);
-                        e.currentTarget.value = '';
-                      }}
-                    />
-                    <Button type="button" onClick={() => document.getElementById('image_file')?.click()} disabled={uploadingImage}>
-                      {uploadingImage ? 'Uploading...' : 'Upload'}
-                    </Button>
-                  </div>
-                </div>
+                <Label>Product Images</Label>
+                <ImageUploader
+                  images={productForm.images}
+                  onImagesChange={(imgs) => setProductForm((p) => ({
+                    ...p,
+                    images: imgs,
+                    image_url: imgs.length > 0 ? imgs[0] : ''
+                  }))}
+                  onUpload={async (files) => {
+                    const uploadedUrls: string[] = [];
+                    for (const file of files) {
+                      try {
+                        const result = await new Promise<string>((resolve, reject) => {
+                          const originalUploadFile = uploadFile;
+                          uploadFile(file).then(() => {
+                            const url = productForm.image_url;
+                            if (url) resolve(url);
+                            else reject(new Error('Upload failed'));
+                          }).catch(reject);
+                        });
+                        uploadedUrls.push(result);
+                      } catch (err) {
+                        console.error('Failed to upload file:', err);
+                      }
+                    }
+                    return uploadedUrls;
+                  }}
+                  isLoading={uploadingImage}
+                  maxImages={10}
+                />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
