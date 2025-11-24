@@ -398,6 +398,7 @@ const EMPTY_FORM: ProductFormState = {
   description: '',
   price: 0,
   image_url: '',
+  images: [],
   categoryId: '',
   subcategoryId: '',
   stock: 0,
@@ -412,7 +413,7 @@ const EMPTY_FORM: ProductFormState = {
     guidelines: '',
     diagramUrl: '',
   },
-  colors: [],                    // 👈 NEW
+  colors: [],
   highlights: [],
   longDescription: '',
   specs: [],
