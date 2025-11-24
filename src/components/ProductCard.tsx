@@ -14,6 +14,7 @@ interface ProductCardProps {
   image: string;
   category: string;
   to?: string;
+  images?: string[];
 }
 
 export const ProductCard = ({ id, name, price, image, category, to }: ProductCardProps) => {
