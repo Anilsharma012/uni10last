@@ -2549,17 +2549,80 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                 </div>
 
                 <div>
+                  <Label className="mt-4 block">Field Labels (Customize measurement names)</Label>
+                  <div className="grid grid-cols-3 gap-2 mt-2 mb-4">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Chest Label</Label>
+                      <Input
+                        value={productForm.sizeChart.fieldLabels?.chest ?? 'Chest'}
+                        onChange={(e) => {
+                          setProductForm((p) => ({
+                            ...p,
+                            sizeChart: {
+                              ...p.sizeChart,
+                              fieldLabels: {
+                                ...p.sizeChart.fieldLabels,
+                                chest: e.target.value
+                              }
+                            }
+                          }));
+                        }}
+                        placeholder="e.g., Chest"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Waist Label</Label>
+                      <Input
+                        value={productForm.sizeChart.fieldLabels?.waist ?? 'Waist'}
+                        onChange={(e) => {
+                          setProductForm((p) => ({
+                            ...p,
+                            sizeChart: {
+                              ...p.sizeChart,
+                              fieldLabels: {
+                                ...p.sizeChart.fieldLabels,
+                                waist: e.target.value
+                              }
+                            }
+                          }));
+                        }}
+                        placeholder="e.g., Waist"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Length Label</Label>
+                      <Input
+                        value={productForm.sizeChart.fieldLabels?.length ?? 'Length'}
+                        onChange={(e) => {
+                          setProductForm((p) => ({
+                            ...p,
+                            sizeChart: {
+                              ...p.sizeChart,
+                              fieldLabels: {
+                                ...p.sizeChart.fieldLabels,
+                                length: e.target.value
+                              }
+                            }
+                          }));
+                        }}
+                        placeholder="e.g., Length"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
                   <Label className="mt-4 block">Size Chart Rows</Label>
                   <div className="space-y-3 mt-2">
                     {[...Array(Math.max(1, (productForm.sizeChart.rows?.length ?? 0) + 1))].map((_, idx) => (
-                      <div key={idx} className="grid grid-cols-3 gap-2 items-end">
+                      <div key={idx} className="grid grid-cols-5 gap-2 items-end">
                         <div>
                           <Label className="text-xs text-muted-foreground">Size Label</Label>
                           <Input
                             value={productForm.sizeChart.rows?.[idx]?.sizeLabel ?? ''}
                             onChange={(e) => {
                               const newRows = [...(productForm.sizeChart.rows ?? [])];
-                              if (!newRows[idx]) newRows[idx] = { sizeLabel: '', chest: '', brandSize: '' };
+                              if (!newRows[idx]) newRows[idx] = { sizeLabel: '', chest: '', waist: '', length: '' };
                               newRows[idx].sizeLabel = e.target.value;
                               setProductForm((p) => ({ ...p, sizeChart: { ...p.sizeChart, rows: newRows } }));
                             }}
@@ -2567,12 +2630,12 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                           />
                         </div>
                         <div>
-                          <Label className="text-xs text-muted-foreground">Chest</Label>
+                          <Label className="text-xs text-muted-foreground">{productForm.sizeChart.fieldLabels?.chest ?? 'Chest'}</Label>
                           <Input
                             value={productForm.sizeChart.rows?.[idx]?.chest ?? ''}
                             onChange={(e) => {
                               const newRows = [...(productForm.sizeChart.rows ?? [])];
-                              if (!newRows[idx]) newRows[idx] = { sizeLabel: '', chest: '', brandSize: '' };
+                              if (!newRows[idx]) newRows[idx] = { sizeLabel: '', chest: '', waist: '', length: '' };
                               newRows[idx].chest = e.target.value;
                               setProductForm((p) => ({ ...p, sizeChart: { ...p.sizeChart, rows: newRows } }));
                             }}
@@ -2580,16 +2643,29 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                           />
                         </div>
                         <div>
-                          <Label className="text-xs text-muted-foreground">Weist</Label>
+                          <Label className="text-xs text-muted-foreground">{productForm.sizeChart.fieldLabels?.waist ?? 'Waist'}</Label>
                           <Input
-                            value={productForm.sizeChart.rows?.[idx]?.brandSize ?? ''}
+                            value={productForm.sizeChart.rows?.[idx]?.waist ?? ''}
                             onChange={(e) => {
                               const newRows = [...(productForm.sizeChart.rows ?? [])];
-                              if (!newRows[idx]) newRows[idx] = { sizeLabel: '', chest: '', brandSize: '' };
-                              newRows[idx].brandSize = e.target.value;
+                              if (!newRows[idx]) newRows[idx] = { sizeLabel: '', chest: '', waist: '', length: '' };
+                              newRows[idx].waist = e.target.value;
                               setProductForm((p) => ({ ...p, sizeChart: { ...p.sizeChart, rows: newRows } }));
                             }}
-                            placeholder="e.g., M, L..."
+                            placeholder="e.g., 25-27 in"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">{productForm.sizeChart.fieldLabels?.length ?? 'Length'}</Label>
+                          <Input
+                            value={productForm.sizeChart.rows?.[idx]?.length ?? ''}
+                            onChange={(e) => {
+                              const newRows = [...(productForm.sizeChart.rows ?? [])];
+                              if (!newRows[idx]) newRows[idx] = { sizeLabel: '', chest: '', waist: '', length: '' };
+                              newRows[idx].length = e.target.value;
+                              setProductForm((p) => ({ ...p, sizeChart: { ...p.sizeChart, rows: newRows } }));
+                            }}
+                            placeholder="e.g., 28 in"
                           />
                         </div>
                         {productForm.sizeChart.rows?.[idx]?.sizeLabel && (
@@ -2606,9 +2682,9 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                                 },
                               }));
                             }}
-                            className="col-span-3"
+                            className="h-10"
                           >
-                            Remove Row
+                            Remove
                           </Button>
                         )}
                       </div>
