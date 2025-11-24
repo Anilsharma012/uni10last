@@ -27,15 +27,27 @@ interface SizeChartTableModalProps {
   fieldLabels?: SizeChartFieldLabels;
 }
 
-export const SizeChartTableModal = ({ 
-  open, 
-  onOpenChange, 
-  title, 
-  rows, 
-  guidelines, 
-  diagramUrl 
+export const SizeChartTableModal = ({
+  open,
+  onOpenChange,
+  title,
+  rows,
+  guidelines,
+  diagramUrl,
+  fieldLabels
 }: SizeChartTableModalProps) => {
   if (!rows || rows.length === 0) return null;
+
+  const chestLabel = fieldLabels?.chest || 'Chest';
+  const waistLabel = fieldLabels?.waist || 'Waist';
+  const lengthLabel = fieldLabels?.length || 'Length';
+
+  const getColumnValue = (row: SizeChartRow, field: string): string => {
+    if (field === 'waist') {
+      return row.waist || row.brandSize || '';
+    }
+    return (row as any)[field] || '';
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -52,17 +64,18 @@ export const SizeChartTableModal = ({
                 <thead>
                   <tr className="border-b border-border">
                     <th className="px-4 py-2 text-left font-semibold text-foreground">Size</th>
-                    <th className="px-4 py-2 text-left font-semibold text-foreground">Chest</th>
-                    <th className="px-4 py-2 text-left font-semibold text-foreground">Weist</th>
-                     
+                    <th className="px-4 py-2 text-left font-semibold text-foreground">{chestLabel}</th>
+                    <th className="px-4 py-2 text-left font-semibold text-foreground">{waistLabel}</th>
+                    <th className="px-4 py-2 text-left font-semibold text-foreground">{lengthLabel}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {rows.map((row, idx) => (
                     <tr key={idx} className={idx % 2 === 0 ? 'bg-muted/30' : ''}>
                       <td className="px-4 py-3 text-foreground">{row.sizeLabel}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{row.chest}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{row.brandSize}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{getColumnValue(row, 'chest')}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{getColumnValue(row, 'waist')}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{getColumnValue(row, 'length')}</td>
                     </tr>
                   ))}
                 </tbody>
