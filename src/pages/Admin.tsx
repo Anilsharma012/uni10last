@@ -372,6 +372,7 @@ type ProductFormState = {
   description: string;
   price: number;
   image_url: string;
+  images: string[];
   categoryId: string;
   subcategoryId: string;
   stock: number;
@@ -386,7 +387,7 @@ type ProductFormState = {
     guidelines: string;
     diagramUrl: string;
   };
-  colors: string[];  // 👈 yahan add kiya hai color field
+  colors: string[];
   highlights: string[];
   longDescription: string;
   specs: Array<{ key: string; value: string }>;
