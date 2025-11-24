@@ -167,7 +167,7 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
           <div className="relative">
             {/* Mobile: Horizontal Scroll */}
             {isMobile ? (
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              <div className="flex gap-2 overflow-x-auto pb-2">
                 {validImages.map((img, idx) => (
                   <button
                     key={idx}
