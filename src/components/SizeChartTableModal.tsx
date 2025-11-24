@@ -5,8 +5,16 @@ import { escapeHtml } from "@/lib/utils";
 
 interface SizeChartRow {
   sizeLabel: string;
-  chest: string;
-  brandSize: string;
+  chest?: string;
+  waist?: string;
+  length?: string;
+  brandSize?: string;
+}
+
+interface SizeChartFieldLabels {
+  chest?: string;
+  waist?: string;
+  length?: string;
 }
 
 interface SizeChartTableModalProps {
@@ -16,6 +24,7 @@ interface SizeChartTableModalProps {
   rows?: SizeChartRow[];
   guidelines?: string;
   diagramUrl?: string;
+  fieldLabels?: SizeChartFieldLabels;
 }
 
 export const SizeChartTableModal = ({ 
