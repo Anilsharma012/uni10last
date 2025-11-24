@@ -988,6 +988,7 @@ const ProductDetail = () => {
         rows={product?.sizeChart?.rows}
         guidelines={product?.sizeChart?.guidelines}
         diagramUrl={product?.sizeChart?.diagramUrl}
+        fieldLabels={product?.sizeChart?.fieldLabels}
       />
 
       <Footer />
