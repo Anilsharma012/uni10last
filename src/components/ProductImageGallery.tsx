@@ -94,37 +94,16 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
       <div
         className="relative w-full bg-secondary rounded-lg overflow-hidden group"
         style={{ aspectRatio: '1' }}
-        onMouseMove={handleMouseMove}
-        onMouseEnter={() => !isMobile && setIsZoomed(true)}
-        onMouseLeave={() => setIsZoomed(false)}
       >
         <img
           src={mainImage}
           alt={productTitle}
-          className={cn(
-            'w-full h-full object-contain transition-transform duration-200',
-            isZoomed && !isMobile && 'cursor-zoom-in'
-          )}
-          style={
-            isZoomed && !isMobile
-              ? {
-                  transform: 'scale(1.8)',
-                  transformOrigin: `${mousePos.x}% ${mousePos.y}%`,
-                }
-              : {}
-          }
+          className="w-full h-full object-contain transition-transform duration-200"
           onError={(e) => {
             const target = e.currentTarget as HTMLImageElement;
             target.src = '/placeholder.svg';
           }}
         />
-
-        {/* Zoom Indicator */}
-        {!isMobile && (
-          <div className="absolute top-3 right-3 bg-black/40 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-            {isZoomed ? 'Click to zoom out' : 'Hover to zoom'}
-          </div>
-        )}
 
         {/* Navigation Arrows on Mobile */}
         {isMobile && hasMultiple && (
