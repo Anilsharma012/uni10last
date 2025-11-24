@@ -38,24 +38,23 @@ const ProductSchema = new mongoose.Schema(
         title: { type: String },
         fieldLabels: {
           type: {
-            sizeLabel: { type: String, default: 'Size Label' },
-            field1: { type: String, default: 'Chest' },
-            field2: { type: String, default: 'Waist' },
-            field3: { type: String, default: 'Length' }
+            chest: { type: String, default: 'Chest' },
+            waist: { type: String, default: 'Waist' },
+            length: { type: String, default: 'Length' }
           },
           default: {
-            sizeLabel: 'Size Label',
-            field1: 'Chest',
-            field2: 'Waist',
-            field3: 'Length'
+            chest: 'Chest',
+            waist: 'Waist',
+            length: 'Length'
           }
         },
         rows: [
           {
             sizeLabel: { type: String },
-            field1: { type: String },
-            field2: { type: String },
-            field3: { type: String }
+            chest: { type: String },
+            waist: { type: String },
+            length: { type: String },
+            brandSize: { type: String }
           }
         ],
         guidelines: { type: String },
