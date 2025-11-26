@@ -1022,6 +1022,7 @@ const Admin = () => {
         contactNumber: billingForm.contactNumber.trim(),
         email: billingForm.email.trim(),
         gstinNumber: billingForm.gstinNumber.trim(),
+        logo: billingForm.logo.trim(),
       };
       const res = await api(`/api/admin/billing-info`, {
         method: 'POST',
