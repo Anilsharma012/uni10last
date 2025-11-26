@@ -72,6 +72,7 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
   const [couponCode, setCouponCode] = useState("");
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState<string | null>(null);
+  const [selectedAddress, setSelectedAddress] = useState<AddressType | null>(null);
 
   useEffect(() => {
     if (open) {
