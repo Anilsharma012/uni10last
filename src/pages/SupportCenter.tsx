@@ -14,7 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
-import { ChevronRight, Search, Loader2, X } from 'lucide-react';
+import { ChevronRight, Search, Loader2, X, LayoutDashboard, Package, Receipt, Users2, CreditCard, Truck, Tags, MessageCircle, Megaphone, Star, Percent, Menu } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type SupportTicket = {
   _id: string;
