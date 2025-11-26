@@ -10,6 +10,11 @@ const OrderItemSchema = new mongoose.Schema({
   size: String,
   color: String,
   productId: String,
+  discount: {
+    type: { type: String, enum: ['flat', 'percentage'] },
+    value: { type: Number, default: 0 },
+  },
+  discountAmount: { type: Number, default: 0 },
 });
 
 const OrderSchema = new mongoose.Schema(
