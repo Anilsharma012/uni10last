@@ -177,15 +177,35 @@ const Products = () => {
                     <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3 line-clamp-2">
                       {product.description}
                     </p>
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-baseline gap-2 mb-2">
                       <p className="text-sm sm:text-lg font-bold">
-                        ₹{Number(product.price || 0).toLocaleString('en-IN')}
+                        ₹{(() => {
+                          const basePrice = Number(product.price || 0);
+                          if (product?.discount?.value && product.discount.type === 'percentage') {
+                            return (basePrice - (basePrice * product.discount.value / 100)).toLocaleString("en-IN");
+                          } else if (product?.discount?.value && product.discount.type === 'flat') {
+                            return Math.max(0, basePrice - product.discount.value).toLocaleString("en-IN");
+                          }
+                          return basePrice.toLocaleString("en-IN");
+                        })()}
                       </p>
+                      {product?.discount?.value && product.discount.value > 0 && (
+                        <>
+                          <p className="text-xs sm:text-sm text-muted-foreground line-through">
+                            ₹{Number(product.price || 0).toLocaleString("en-IN")}
+                          </p>
+                          <Badge className="bg-red-500 hover:bg-red-600 text-xs">
+                            {product.discount.type === 'percentage' ? `${product.discount.value}% OFF` : `₹${product.discount.value} OFF`}
+                          </Badge>
+                        </>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs text-muted-foreground">Stock: {Number(product.stock || 0)}</p>
                       <Button size="icon" variant="secondary" className="h-8 w-8 sm:h-10 sm:w-10">
                         <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2">Stock: {Number(product.stock || 0)}</p>
                   </div>
                 </Card>
               );
