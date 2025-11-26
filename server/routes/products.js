@@ -144,6 +144,18 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
         : [],
       sizeChartUrl: body.sizeChartUrl || undefined,
       sizeChartTitle: body.sizeChartTitle || undefined,
+      colorInventory: Array.isArray(body.colorInventory)
+        ? body.colorInventory.map(c => ({
+            color: String(c.color || '').trim(),
+            qty: Number(c.qty || 0)
+          })).filter(c => c.color)
+        : [],
+      discount: body.discount && typeof body.discount === 'object'
+        ? {
+            type: body.discount.type === 'percentage' ? 'percentage' : 'flat',
+            value: Number(body.discount.value || 0)
+          }
+        : { type: 'flat', value: 0 },
       highlights: Array.isArray(body.highlights)
         ? body.highlights.filter(h => String(h || '').trim()).slice(0, 8)
         : [],
@@ -220,6 +232,18 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
         qty: Number(s.qty || 0)
       })).filter(s => s.code);
     }
+    if (Array.isArray(body.colorInventory)) {
+      updates.colorInventory = body.colorInventory.map(c => ({
+        color: String(c.color || '').trim(),
+        qty: Number(c.qty || 0)
+      })).filter(c => c.color);
+    }
+    if (body.discount !== undefined && typeof body.discount === 'object') {
+      updates.discount = {
+        type: body.discount.type === 'percentage' ? 'percentage' : 'flat',
+        value: Number(body.discount.value || 0)
+      };
+    }
     if (typeof body.sizeChartUrl !== 'undefined') updates.sizeChartUrl = body.sizeChartUrl || undefined;
     if (typeof body.sizeChartTitle !== 'undefined') updates.sizeChartTitle = body.sizeChartTitle || undefined;
     if (body.sizeChart !== undefined) updates.sizeChart = body.sizeChart || undefined;
@@ -266,11 +290,22 @@ router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
         qty: Number(s.qty || 0)
       })).filter(s => s.code);
     }
+    if (Array.isArray(body.colorInventory)) {
+      updates.colorInventory = body.colorInventory.map(c => ({
+        color: String(c.color || '').trim(),
+        qty: Number(c.qty || 0)
+      })).filter(c => c.color);
+    }
+    if (body.discount !== undefined && typeof body.discount === 'object') {
+      updates.discount = {
+        type: body.discount.type === 'percentage' ? 'percentage' : 'flat',
+        value: Number(body.discount.value || 0)
+      };
+    }
     if (typeof body.sizeChartUrl !== 'undefined') updates.sizeChartUrl = body.sizeChartUrl || undefined;
     if (typeof body.sizeChartTitle !== 'undefined') updates.sizeChartTitle = body.sizeChartTitle || undefined;
     if (body.sizeChart !== undefined) updates.sizeChart = body.sizeChart || undefined;
 
-    // ✅ PATCH me bhi colors support
     if (Array.isArray(body.colors)) {
       updates.colors = body.colors;
     } else if (typeof body.color !== 'undefined') {
@@ -280,6 +315,36 @@ router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
     const doc = await Product.findByIdAndUpdate(id, updates, { new: true }).lean();
     if (!doc) return res.status(404).json({ ok: false, message: 'Not found' });
     return res.json({ ok: true, data: doc });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ ok: false, message: 'Server error' });
+  }
+});
+
+// Get related products by category and price range
+router.get('/:id/related', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const limit = Math.min(Number(req.query.limit || 8), 20);
+
+    const product = await Product.findById(id).lean();
+    if (!product) return res.status(404).json({ ok: false, message: 'Product not found' });
+
+    const filter = {
+      active: true,
+      _id: { $ne: id },
+      category: product.category,
+    };
+
+    const basePrice = Number(product.price || 0);
+    const priceRange = basePrice * 0.5;
+    filter.price = {
+      $gte: Math.max(0, basePrice - priceRange),
+      $lte: basePrice + priceRange,
+    };
+
+    const related = await Product.find(filter).limit(limit).lean();
+    return res.json({ ok: true, data: related });
   } catch (e) {
     console.error(e);
     return res.status(500).json({ ok: false, message: 'Server error' });

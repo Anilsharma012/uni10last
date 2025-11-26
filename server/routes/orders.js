@@ -44,19 +44,55 @@ router.post('/', authOptional, async (req, res) => {
       ? { payerName: body.upi.payerName || '', txnId: body.upi.txnId || '' }
       : undefined;
 
-    // Decrement inventory for each item with per-size tracking
+    // Decrement inventory for each item with per-size tracking and color inventory
+    // Also include per-product discount in order items
     const Product = require('../models/Product');
+    const enrichedItems = [];
+
     for (const item of items) {
+      let product = null;
+      let enrichedItem = { ...item };
+
       if (item.id || item.productId) {
         const productId = item.id || item.productId;
-        const product = await Product.findById(productId);
+        product = await Product.findById(productId);
+
         if (product) {
+          // Add product discount to order item
+          if (product.discount && product.discount.value > 0) {
+            enrichedItem.discount = product.discount;
+            const itemPrice = Number(item.price || 0);
+            if (product.discount.type === 'percentage') {
+              enrichedItem.discountAmount = itemPrice * (product.discount.value / 100);
+            } else {
+              enrichedItem.discountAmount = product.discount.value;
+            }
+          }
+
+          const requestedQty = Number(item.qty || 1);
+
+          // Check color inventory if color is specified
+          if (item.color && Array.isArray(product.colorInventory)) {
+            const colorIdx = product.colorInventory.findIndex(c => c.color === item.color);
+            if (colorIdx !== -1) {
+              const currentQty = product.colorInventory[colorIdx].qty;
+              if (currentQty < requestedQty) {
+                return res.status(409).json({
+                  ok: false,
+                  message: `Insufficient stock for ${product.title} in color ${item.color}`,
+                  itemId: item.id || item.productId,
+                  availableQty: currentQty
+                });
+              }
+              product.colorInventory[colorIdx].qty -= requestedQty;
+            }
+          }
+
           // If the product has per-size inventory and the item has a size
           if (product.trackInventoryBySize && item.size && Array.isArray(product.sizeInventory)) {
             const sizeIdx = product.sizeInventory.findIndex(s => s.code === item.size);
             if (sizeIdx !== -1) {
               const currentQty = product.sizeInventory[sizeIdx].qty;
-              const requestedQty = Number(item.qty || 1);
 
               // Check if enough stock
               if (currentQty < requestedQty) {
@@ -70,12 +106,10 @@ router.post('/', authOptional, async (req, res) => {
 
               // Decrement the size inventory
               product.sizeInventory[sizeIdx].qty -= requestedQty;
-              await product.save();
             }
           } else if (!product.trackInventoryBySize) {
             // Decrement general stock
             const currentStock = product.stock || 0;
-            const requestedQty = Number(item.qty || 1);
             if (currentStock < requestedQty) {
               return res.status(409).json({
                 ok: false,
@@ -85,10 +119,13 @@ router.post('/', authOptional, async (req, res) => {
               });
             }
             product.stock -= requestedQty;
-            await product.save();
           }
+
+          await product.save();
         }
       }
+
+      enrichedItems.push(enrichedItem);
     }
 
     const doc = new Order({
@@ -102,7 +139,7 @@ router.post('/', authOptional, async (req, res) => {
       state,
       pincode,
       landmark,
-      items,
+      items: enrichedItems,
       total,
       status,
       upi,
@@ -141,7 +178,7 @@ router.post('/send-mail', requireAuth, requireAdmin, async (req, res) => {
 // Request return (by body)
 router.post('/request-return', requireAuth, async (req, res) => {
   try {
-    const { orderId, reason, upiId, photoUrl } = req.body || {};
+    const { orderId, reason, refundMethod, refundUpiId, refundBankDetails, photoUrl } = req.body || {};
     if (!orderId) return res.status(400).json({ ok: false, message: 'Missing orderId' });
     if (!reason || !reason.trim()) return res.status(400).json({ ok: false, message: 'Return reason is required' });
 
@@ -160,10 +197,24 @@ router.post('/request-return', requireAuth, async (req, res) => {
     }
 
     order.returnReason = reason.trim();
-    order.refundUpiId = typeof upiId === 'string' ? upiId.trim() : '';
     order.returnPhoto = typeof photoUrl === 'string' ? photoUrl.trim() : '';
     order.returnRequestedAt = new Date();
     order.returnStatus = 'Pending';
+    order.refundMethod = refundMethod === 'bank' ? 'bank' : 'upi';
+    order.refundAmount = order.total || 0;
+
+    if (refundMethod === 'bank' && typeof refundBankDetails === 'object') {
+      order.refundBankDetails = {
+        accountHolderName: refundBankDetails.accountHolderName || '',
+        bankName: refundBankDetails.bankName || '',
+        accountNumber: refundBankDetails.accountNumber || '',
+        ifscCode: refundBankDetails.ifscCode || '',
+        branch: refundBankDetails.branch || '',
+      };
+    } else {
+      order.refundUpiId = typeof refundUpiId === 'string' ? refundUpiId.trim() : '';
+    }
+
     await order.save();
 
     return res.json({ ok: true, data: order, message: 'Return request submitted' });
@@ -353,7 +404,7 @@ router.post('/:id/email', requireAuth, async (req, res) => {
 router.post('/:id/request-return', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    const { reason, upiId, photoUrl } = req.body || {};
+    const { reason, refundMethod, refundUpiId, refundBankDetails, photoUrl } = req.body || {};
 
     if (!reason || !reason.trim()) {
       return res.status(400).json({ ok: false, message: 'Return reason is required' });
@@ -380,10 +431,24 @@ router.post('/:id/request-return', requireAuth, async (req, res) => {
     }
 
     order.returnReason = reason.trim();
-    order.refundUpiId = typeof upiId === 'string' ? upiId.trim() : '';
     order.returnPhoto = typeof photoUrl === 'string' ? photoUrl.trim() : '';
     order.returnRequestedAt = new Date();
     order.returnStatus = 'Pending';
+    order.refundMethod = refundMethod === 'bank' ? 'bank' : 'upi';
+    order.refundAmount = order.total || 0;
+
+    if (refundMethod === 'bank' && typeof refundBankDetails === 'object') {
+      order.refundBankDetails = {
+        accountHolderName: refundBankDetails.accountHolderName || '',
+        bankName: refundBankDetails.bankName || '',
+        accountNumber: refundBankDetails.accountNumber || '',
+        ifscCode: refundBankDetails.ifscCode || '',
+        branch: refundBankDetails.branch || '',
+      };
+    } else {
+      order.refundUpiId = typeof refundUpiId === 'string' ? refundUpiId.trim() : '';
+    }
+
     await order.save();
 
     return res.json({ ok: true, data: order, message: 'Return request submitted' });
@@ -420,9 +485,9 @@ router.put('/:id/admin-update', requireAuth, requireAdmin, async (req, res) => {
     }
 
     // Update return status if provided
-    if (returnStatus && ['None', 'Pending', 'Approved', 'Rejected'].includes(returnStatus)) {
+    if (returnStatus && ['None', 'Pending', 'Processing', 'Completed', 'Rejected'].includes(returnStatus)) {
       order.returnStatus = returnStatus;
-      if (returnStatus === 'Approved') {
+      if (returnStatus === 'Completed') {
         order.status = 'returned';
       }
     }
@@ -437,8 +502,8 @@ router.put('/:id/admin-update', requireAuth, requireAdmin, async (req, res) => {
       }
     }
 
-    // Send email on return approval
-    if (returnStatus === 'Approved' && order.returnStatus === 'Approved' && order.userId && order.userId.email) {
+    // Send email on return completion
+    if ((returnStatus === 'Completed' || returnStatus === 'Processing') && order.userId && order.userId.email) {
       const user = order.userId;
       await sendReturnApprovalEmail(order, user);
     }

@@ -231,6 +231,202 @@ router.post('/reset-password', async (req, res) => {
   }
 });
 
+// Get user addresses
+router.get('/addresses', requireAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('addresses');
+    return res.json({ ok: true, data: user?.addresses || [] });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ ok: false, message: 'Server error' });
+  }
+});
+
+// Add new address
+router.post('/addresses', requireAuth, async (req, res) => {
+  try {
+    const { name, phone, houseNumber, area, city, state, pincode, landmark, isDefault } = req.body || {};
+    if (!name || !phone || !houseNumber || !area || !city || !state || !pincode) {
+      return res.status(400).json({ ok: false, message: 'Missing required fields' });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ ok: false, message: 'User not found' });
+
+    const newAddress = {
+      name,
+      phone,
+      houseNumber,
+      area,
+      city,
+      state,
+      pincode,
+      landmark: landmark || '',
+      isDefault: !!isDefault,
+    };
+
+    if (isDefault) {
+      user.addresses.forEach(addr => { addr.isDefault = false; });
+    }
+
+    user.addresses.push(newAddress);
+    await user.save();
+
+    return res.json({ ok: true, data: user.addresses });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ ok: false, message: 'Server error' });
+  }
+});
+
+// Update address
+router.put('/addresses/:addressId', requireAuth, async (req, res) => {
+  try {
+    const { addressId } = req.params;
+    const { name, phone, houseNumber, area, city, state, pincode, landmark, isDefault } = req.body || {};
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ ok: false, message: 'User not found' });
+
+    const address = user.addresses.id(addressId);
+    if (!address) return res.status(404).json({ ok: false, message: 'Address not found' });
+
+    if (name) address.name = name;
+    if (phone) address.phone = phone;
+    if (houseNumber) address.houseNumber = houseNumber;
+    if (area) address.area = area;
+    if (city) address.city = city;
+    if (state) address.state = state;
+    if (pincode) address.pincode = pincode;
+    if (landmark !== undefined) address.landmark = landmark;
+
+    if (isDefault) {
+      user.addresses.forEach(addr => { addr.isDefault = false; });
+      address.isDefault = true;
+    } else if (isDefault === false) {
+      address.isDefault = false;
+    }
+
+    await user.save();
+    return res.json({ ok: true, data: user.addresses });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ ok: false, message: 'Server error' });
+  }
+});
+
+// Delete address
+router.delete('/addresses/:addressId', requireAuth, async (req, res) => {
+  try {
+    const { addressId } = req.params;
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ ok: false, message: 'User not found' });
+
+    user.addresses.id(addressId).deleteOne();
+    await user.save();
+
+    return res.json({ ok: true, data: user.addresses });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ ok: false, message: 'Server error' });
+  }
+});
+
+// Get user bank details
+router.get('/bank-details', requireAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('bankDetails');
+    return res.json({ ok: true, data: user?.bankDetails || [] });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ ok: false, message: 'Server error' });
+  }
+});
+
+// Add bank details
+router.post('/bank-details', requireAuth, async (req, res) => {
+  try {
+    const { accountHolderName, bankName, accountNumber, ifscCode, branch, isDefault } = req.body || {};
+    if (!accountHolderName || !bankName || !accountNumber || !ifscCode) {
+      return res.status(400).json({ ok: false, message: 'Missing required fields' });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ ok: false, message: 'User not found' });
+
+    const newBankDetails = {
+      accountHolderName,
+      bankName,
+      accountNumber,
+      ifscCode,
+      branch: branch || '',
+      isDefault: !!isDefault,
+    };
+
+    if (isDefault) {
+      user.bankDetails.forEach(bank => { bank.isDefault = false; });
+    }
+
+    user.bankDetails.push(newBankDetails);
+    await user.save();
+
+    return res.json({ ok: true, data: user.bankDetails });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ ok: false, message: 'Server error' });
+  }
+});
+
+// Update bank details
+router.put('/bank-details/:bankId', requireAuth, async (req, res) => {
+  try {
+    const { bankId } = req.params;
+    const { accountHolderName, bankName, accountNumber, ifscCode, branch, isDefault } = req.body || {};
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ ok: false, message: 'User not found' });
+
+    const bankDetails = user.bankDetails.id(bankId);
+    if (!bankDetails) return res.status(404).json({ ok: false, message: 'Bank details not found' });
+
+    if (accountHolderName) bankDetails.accountHolderName = accountHolderName;
+    if (bankName) bankDetails.bankName = bankName;
+    if (accountNumber) bankDetails.accountNumber = accountNumber;
+    if (ifscCode) bankDetails.ifscCode = ifscCode;
+    if (branch !== undefined) bankDetails.branch = branch;
+
+    if (isDefault) {
+      user.bankDetails.forEach(bank => { bank.isDefault = false; });
+      bankDetails.isDefault = true;
+    } else if (isDefault === false) {
+      bankDetails.isDefault = false;
+    }
+
+    await user.save();
+    return res.json({ ok: true, data: user.bankDetails });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ ok: false, message: 'Server error' });
+  }
+});
+
+// Delete bank details
+router.delete('/bank-details/:bankId', requireAuth, async (req, res) => {
+  try {
+    const { bankId } = req.params;
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ ok: false, message: 'User not found' });
+
+    user.bankDetails.id(bankId).deleteOne();
+    await user.save();
+
+    return res.json({ ok: true, data: user.bankDetails });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ ok: false, message: 'Server error' });
+  }
+});
+
 // Logout
 router.post('/logout', (req, res) => {
   res.clearCookie(COOKIE_NAME, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production' });

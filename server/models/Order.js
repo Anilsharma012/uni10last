@@ -10,6 +10,11 @@ const OrderItemSchema = new mongoose.Schema({
   size: String,
   color: String,
   productId: String,
+  discount: {
+    type: { type: String, enum: ['flat', 'percentage'] },
+    value: { type: Number, default: 0 },
+  },
+  discountAmount: { type: Number, default: 0 },
 });
 
 const OrderSchema = new mongoose.Schema(
@@ -40,10 +45,19 @@ const OrderSchema = new mongoose.Schema(
     trackingId: { type: String, default: '' },
     deliveredAt: { type: Date },
     returnRequestedAt: { type: Date },
+    refundMethod: { type: String, enum: ['upi', 'bank'], default: 'upi' },
     refundUpiId: { type: String, default: '' },
+    refundBankDetails: {
+      accountHolderName: { type: String, default: '' },
+      bankName: { type: String, default: '' },
+      accountNumber: { type: String, default: '' },
+      ifscCode: { type: String, default: '' },
+      branch: { type: String, default: '' },
+    },
+    refundAmount: { type: Number, default: 0 },
     returnPhoto: { type: String, default: '' },
     returnReason: { type: String, default: '' },
-    returnStatus: { type: String, enum: ['None', 'Pending', 'Approved', 'Rejected'], default: 'None' },
+    returnStatus: { type: String, enum: ['None', 'Pending', 'Processing', 'Completed', 'Rejected'], default: 'None' },
   },
   { timestamps: true },
 );

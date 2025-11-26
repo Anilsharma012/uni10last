@@ -16,8 +16,16 @@ const ProductSchema = new mongoose.Schema(
     stock: { type: Number, default: 0 },
     attributes: { type: Object, default: {} },
 
-    // ✅ NEW: colors array (["Black","Red",...])
     colors: { type: [String], default: [] },
+    colorInventory: {
+      type: [
+        {
+          color: { type: String },
+          qty: { type: Number, default: 0 },
+        },
+      ],
+      default: [],
+    },
 
     sizes: { type: [String], default: [] },
     trackInventoryBySize: { type: Boolean, default: true },
@@ -62,6 +70,15 @@ const ProductSchema = new mongoose.Schema(
       },
       default: null
     },
+
+    discount: {
+      type: {
+        type: { type: String, enum: ['flat', 'percentage'] },
+        value: { type: Number, default: 0 },
+      },
+      default: { type: 'flat', value: 0 },
+    },
+
     active: { type: Boolean, default: true },
     featured: { type: Boolean, default: false },
   },

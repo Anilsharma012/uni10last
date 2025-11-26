@@ -33,6 +33,7 @@ import { ReviewModal } from "@/components/ReviewModal";
 import ReviewsList from "@/components/ReviewsList";
 import { AvailableCoupons } from "@/components/AvailableCoupons";
 import { ProductImageGallery } from "@/components/ProductImageGallery";
+import { RelatedProducts } from "@/components/RelatedProducts";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 const resolveImage = (src?: string) => {
@@ -203,8 +204,18 @@ const ProductDetail = () => {
     [product]
   );
 
-  // Get stock based on per-size inventory or general stock
+  // Get stock based on per-size inventory, color inventory, or general stock
   const getCurrentStock = useCallback(() => {
+    // Check color inventory if color-wise stock tracking is enabled
+    if (selectedColor && Array.isArray(product?.colorInventory)) {
+      const colorStock = product.colorInventory.find(
+        (c) => c.color === selectedColor
+      );
+      if (colorStock) {
+        return colorStock.qty ?? 0;
+      }
+    }
+
     if (
       product?.trackInventoryBySize &&
       Array.isArray(product?.sizeInventory) &&
@@ -216,7 +227,7 @@ const ProductDetail = () => {
       return sizeInfo?.qty ?? 0;
     }
     return Number(product?.stock ?? 0);
-  }, [product, selectedSize]);
+  }, [product, selectedSize, selectedColor]);
 
   const stockNum = useMemo(() => getCurrentStock(), [getCurrentStock]);
   const outOfStock = stockNum === 0;
@@ -469,9 +480,29 @@ const ProductDetail = () => {
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tighter mb-2 sm:mb-4">
               {title}
             </h1>
-            <p className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6">
-              ₹{Number(product.price || 0).toLocaleString("en-IN")}
-            </p>
+            <div className="flex items-baseline gap-3 mb-4 sm:mb-6">
+              <p className="text-xl sm:text-2xl md:text-3xl font-bold">
+                ₹{(() => {
+                  const basePrice = Number(product.price || 0);
+                  if (product?.discount?.value && product.discount.type === 'percentage') {
+                    return (basePrice - (basePrice * product.discount.value / 100)).toLocaleString("en-IN");
+                  } else if (product?.discount?.value && product.discount.type === 'flat') {
+                    return Math.max(0, basePrice - product.discount.value).toLocaleString("en-IN");
+                  }
+                  return basePrice.toLocaleString("en-IN");
+                })()}
+              </p>
+              {product?.discount?.value && product.discount.value > 0 && (
+                <>
+                  <p className="text-sm sm:text-base text-muted-foreground line-through">
+                    ₹{Number(product.price || 0).toLocaleString("en-IN")}
+                  </p>
+                  <Badge className="bg-red-500 hover:bg-red-600">
+                    {product.discount.type === 'percentage' ? `${product.discount.value}% OFF` : `₹${product.discount.value} OFF`}
+                  </Badge>
+                </>
+              )}
+            </div>
             <div className="mb-3 sm:mb-4">
               <Badge
                 variant={outOfStock ? "destructive" : "secondary"}
@@ -497,25 +528,36 @@ const ProductDetail = () => {
                   Color
                 </label>
                 <div className="flex flex-wrap gap-2 sm:gap-3">
-                  {product.colors.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => setSelectedColor(c)}
-                      className={cn(
-                        "flex items-center gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border text-xs sm:text-sm transition-colors",
-                        selectedColor === c
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-transparent border-border hover:border-primary"
-                      )}
-                    >
-                      <span
-                        className="h-4 w-4 rounded-full border border-border"
-                        style={{ backgroundColor: colorToCss(c) }}
-                      />
-                      <span>{c}</span>
-                    </button>
-                  ))}
+                  {product.colors.map((c) => {
+                    const colorStock = Array.isArray(product.colorInventory)
+                      ? product.colorInventory.find(ci => ci.color === c)?.qty ?? 0
+                      : Number(product.stock ?? 0);
+                    const isOutOfStock = colorStock === 0;
+
+                    return (
+                      <button
+                        key={c}
+                        type="button"
+                        disabled={isOutOfStock}
+                        onClick={() => setSelectedColor(c)}
+                        className={cn(
+                          "flex items-center gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border text-xs sm:text-sm transition-colors",
+                          isOutOfStock
+                            ? "opacity-50 cursor-not-allowed bg-muted border-border text-muted-foreground"
+                            : selectedColor === c
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-transparent border-border hover:border-primary"
+                        )}
+                      >
+                        <span
+                          className="h-4 w-4 rounded-full border border-current"
+                          style={{ backgroundColor: colorToCss(c) }}
+                        />
+                        <span>{c}</span>
+                        {isOutOfStock && <span className="text-xs">Out of Stock</span>}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -602,35 +644,6 @@ const ProductDetail = () => {
                 </div>
               )}
 
-            {/* Color selector */}
-            {Array.isArray(product?.colors) && product.colors.length > 0 && (
-              <div className="mb-4 sm:mb-6">
-                <label className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3">
-                  Color
-                </label>
-                <div className="flex flex-wrap gap-2 sm:gap-3">
-                  {product.colors.map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      onClick={() => setSelectedColor(color)}
-                      className={cn(
-                        "flex items-center gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded border text-xs sm:text-sm",
-                        selectedColor === color
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-transparent border-border"
-                      )}
-                    >
-                      <span
-                        className="h-3 w-3 sm:h-4 sm:w-4 rounded-full border border-current"
-                        style={{ backgroundColor: color.toLowerCase().trim() }}
-                      />
-                      {color}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* Simple sizes (non-inventory tracked) */}
             {!product?.trackInventoryBySize &&
@@ -960,6 +973,8 @@ const ProductDetail = () => {
           key={reviewKey}
           productId={product?._id || product?.id || ""}
         />
+
+        <RelatedProducts productId={product?._id || product?.id || ""} />
       </main>
 
       <ReviewModal

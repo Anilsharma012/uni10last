@@ -50,7 +50,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    setUser(res.ok && res.json?.ok ? res.json.user : null);
+    if (res.ok && res.json?.ok && res.json?.user) {
+      setUser(res.json.user);
+    } else {
+      setUser(null);
+    }
   };
 
   useEffect(() => {
