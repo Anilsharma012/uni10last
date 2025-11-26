@@ -139,7 +139,7 @@ router.post('/', authOptional, async (req, res) => {
       state,
       pincode,
       landmark,
-      items,
+      items: enrichedItems,
       total,
       status,
       upi,
