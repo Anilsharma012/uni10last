@@ -216,8 +216,14 @@ export const AddressSelector: React.FC<AddressSelectorProps> = ({ onAddressSelec
             />
             <Input
               placeholder="Phone Number"
+              type="tel"
+              inputMode="numeric"
+              maxLength={10}
               value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                setFormData({ ...formData, phone: value });
+              }}
               disabled={saving}
             />
             <Input
