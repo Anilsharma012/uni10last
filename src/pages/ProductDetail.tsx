@@ -961,6 +961,8 @@ const ProductDetail = () => {
           key={reviewKey}
           productId={product?._id || product?.id || ""}
         />
+
+        <RelatedProducts productId={product?._id || product?.id || ""} />
       </main>
 
       <ReviewModal
