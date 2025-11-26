@@ -513,9 +513,21 @@ router.get('/billing-info', async (req, res) => {
         contactNumber: '',
         email: '',
         gstinNumber: '',
+        logo: '',
       });
     }
-    return res.json({ ok: true, data: billingInfo });
+    // Return with both original and mapped field names for compatibility
+    const data = billingInfo.toObject ? billingInfo.toObject() : billingInfo;
+    return res.json({
+      ok: true,
+      data: {
+        ...data,
+        // Map to invoice-compatible field names
+        name: data.companyName || 'UNI10',
+        phone: data.contactNumber || '',
+        gstIn: data.gstinNumber || '',
+      }
+    });
   } catch (e) {
     console.error('Failed to fetch billing info:', e);
     return res.status(500).json({ ok: false, message: 'Server error' });
