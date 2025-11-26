@@ -598,6 +598,7 @@ const Admin = () => {
   const [testingRazorpay, setTestingRazorpay] = useState(false);
   const [savingShiprocket, setSavingShiprocket] = useState(false);
   const [uploadingQrCode, setUploadingQrCode] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   // Contact settings state
   const [contactForm, setContactForm] = useState<{ phones: string[]; emails: string[]; address: { line1?: string; line2?: string; city?: string; state?: string; pincode?: string }; mapsUrl?: string }>(() => ({ phones: ['+91 99715 41140'], emails: ['supportinfo@gmail.com','uni10@gmail.com'], address: {}, mapsUrl: '' }));
