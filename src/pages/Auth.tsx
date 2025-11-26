@@ -107,12 +107,17 @@ const Auth = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone (Optional)</Label>
+                    <Label htmlFor="phone">Phone (10 digits required)</Label>
                     <Input
                       id="phone"
                       type="tel"
+                      placeholder="Enter 10-digit number"
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '');
+                        setPhone(value.slice(0, 10));
+                      }}
+                      maxLength={10}
                     />
                   </div>
                 </>
