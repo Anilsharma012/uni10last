@@ -644,35 +644,6 @@ const ProductDetail = () => {
                 </div>
               )}
 
-            {/* Color selector */}
-            {Array.isArray(product?.colors) && product.colors.length > 0 && (
-              <div className="mb-4 sm:mb-6">
-                <label className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3">
-                  Color
-                </label>
-                <div className="flex flex-wrap gap-2 sm:gap-3">
-                  {product.colors.map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      onClick={() => setSelectedColor(color)}
-                      className={cn(
-                        "flex items-center gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded border text-xs sm:text-sm",
-                        selectedColor === color
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-transparent border-border"
-                      )}
-                    >
-                      <span
-                        className="h-3 w-3 sm:h-4 sm:w-4 rounded-full border border-current"
-                        style={{ backgroundColor: color.toLowerCase().trim() }}
-                      />
-                      {color}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* Simple sizes (non-inventory tracked) */}
             {!product?.trackInventoryBySize &&
