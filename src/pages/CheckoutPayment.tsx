@@ -228,6 +228,14 @@ const CheckoutPayment = () => {
       });
       return false;
     }
+    if (!/^\d{10}$/.test(customerDetails.phone)) {
+      toast({
+        title: 'Invalid Phone Number',
+        description: 'Phone number must be exactly 10 digits',
+        variant: 'destructive',
+      });
+      return false;
+    }
     return true;
   };
 
