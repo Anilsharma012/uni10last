@@ -430,9 +430,14 @@ const EMPTY_FORM: ProductFormState = {
     diagramUrl: '',
   },
   colors: [],
+  colorInventory: [],
   highlights: [],
   longDescription: '',
   specs: [],
+  discount: {
+    type: 'flat',
+    value: 0,
+  },
 };
 
 
