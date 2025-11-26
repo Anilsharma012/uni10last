@@ -45,12 +45,30 @@ router.post('/', authOptional, async (req, res) => {
       : undefined;
 
     // Decrement inventory for each item with per-size tracking and color inventory
+    // Also include per-product discount in order items
     const Product = require('../models/Product');
+    const enrichedItems = [];
+
     for (const item of items) {
+      let product = null;
+      let enrichedItem = { ...item };
+
       if (item.id || item.productId) {
         const productId = item.id || item.productId;
-        const product = await Product.findById(productId);
+        product = await Product.findById(productId);
+
         if (product) {
+          // Add product discount to order item
+          if (product.discount && product.discount.value > 0) {
+            enrichedItem.discount = product.discount;
+            const itemPrice = Number(item.price || 0);
+            if (product.discount.type === 'percentage') {
+              enrichedItem.discountAmount = itemPrice * (product.discount.value / 100);
+            } else {
+              enrichedItem.discountAmount = product.discount.value;
+            }
+          }
+
           const requestedQty = Number(item.qty || 1);
 
           // Check color inventory if color is specified
@@ -106,6 +124,8 @@ router.post('/', authOptional, async (req, res) => {
           await product.save();
         }
       }
+
+      enrichedItems.push(enrichedItem);
     }
 
     const doc = new Order({
