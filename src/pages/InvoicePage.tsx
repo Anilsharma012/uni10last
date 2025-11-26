@@ -45,9 +45,9 @@ export function InvoicePage() {
         });
 
         const businessPromise = (async () => {
-          // Try to fetch billing info first
+          // Try to fetch public billing info first
           try {
-            const res = await api(`/api/admin/billing-info?v=${Date.now()}`);
+            const res = await api(`/api/admin/billing-info/public?v=${Date.now()}`);
             if (res.ok && res.json?.data) {
               return res.json.data as any;
             }
