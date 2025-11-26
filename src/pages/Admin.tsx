@@ -3987,7 +3987,29 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                     value={billingForm.logo}
                     onChange={(e) => setBillingForm((prev) => ({ ...prev, logo: e.target.value }))}
                     placeholder="e.g., https://example.com/logo.png or /uni10-logo.png"
-                    disabled={billingSaving}
+                    disabled={billingSaving || uploadingLogo}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={billingSaving || uploadingLogo}
+                    onClick={() => document.getElementById('logo-file-input')?.click()}
+                    className="whitespace-nowrap"
+                  >
+                    {uploadingLogo ? 'Uploading...' : 'Upload File'}
+                  </Button>
+                  <input
+                    id="logo-file-input"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={billingSaving || uploadingLogo}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) void uploadLogo(f);
+                      e.currentTarget.value = '';
+                    }}
                   />
                 </div>
                 {billingForm.logo && (
@@ -3996,7 +4018,7 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                     <span className="text-xs text-muted-foreground">Logo preview</span>
                   </div>
                 )}
-                <p className="text-xs text-muted-foreground mt-2">Use this logo on invoices and documents. Recommended: 300x300px or less</p>
+                <p className="text-xs text-muted-foreground mt-2">Use this logo on invoices and documents. Recommended: 300x300px or less. Upload a file or paste a URL.</p>
               </div>
 
               <div className="flex gap-2 pt-4">
