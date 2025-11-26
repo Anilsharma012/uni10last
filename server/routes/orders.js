@@ -44,19 +44,37 @@ router.post('/', authOptional, async (req, res) => {
       ? { payerName: body.upi.payerName || '', txnId: body.upi.txnId || '' }
       : undefined;
 
-    // Decrement inventory for each item with per-size tracking
+    // Decrement inventory for each item with per-size tracking and color inventory
     const Product = require('../models/Product');
     for (const item of items) {
       if (item.id || item.productId) {
         const productId = item.id || item.productId;
         const product = await Product.findById(productId);
         if (product) {
+          const requestedQty = Number(item.qty || 1);
+
+          // Check color inventory if color is specified
+          if (item.color && Array.isArray(product.colorInventory)) {
+            const colorIdx = product.colorInventory.findIndex(c => c.color === item.color);
+            if (colorIdx !== -1) {
+              const currentQty = product.colorInventory[colorIdx].qty;
+              if (currentQty < requestedQty) {
+                return res.status(409).json({
+                  ok: false,
+                  message: `Insufficient stock for ${product.title} in color ${item.color}`,
+                  itemId: item.id || item.productId,
+                  availableQty: currentQty
+                });
+              }
+              product.colorInventory[colorIdx].qty -= requestedQty;
+            }
+          }
+
           // If the product has per-size inventory and the item has a size
           if (product.trackInventoryBySize && item.size && Array.isArray(product.sizeInventory)) {
             const sizeIdx = product.sizeInventory.findIndex(s => s.code === item.size);
             if (sizeIdx !== -1) {
               const currentQty = product.sizeInventory[sizeIdx].qty;
-              const requestedQty = Number(item.qty || 1);
 
               // Check if enough stock
               if (currentQty < requestedQty) {
@@ -70,12 +88,10 @@ router.post('/', authOptional, async (req, res) => {
 
               // Decrement the size inventory
               product.sizeInventory[sizeIdx].qty -= requestedQty;
-              await product.save();
             }
           } else if (!product.trackInventoryBySize) {
             // Decrement general stock
             const currentStock = product.stock || 0;
-            const requestedQty = Number(item.qty || 1);
             if (currentStock < requestedQty) {
               return res.status(409).json({
                 ok: false,
@@ -85,8 +101,9 @@ router.post('/', authOptional, async (req, res) => {
               });
             }
             product.stock -= requestedQty;
-            await product.save();
           }
+
+          await product.save();
         }
       }
     }
