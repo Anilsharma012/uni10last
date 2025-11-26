@@ -64,7 +64,7 @@ export function ReturnProductForm({ orderId, onSuccess, onCancel }: ReturnProduc
         payload.refundBankDetails = bankDetails;
       }
 
-      const res = await api(`/api/orders/${orderId}/return`, {
+      const res = await api(`/api/orders/${orderId}/request-return`, {
         method: 'POST',
         body: JSON.stringify(payload),
       });
