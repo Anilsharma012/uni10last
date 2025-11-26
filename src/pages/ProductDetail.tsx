@@ -33,6 +33,7 @@ import { ReviewModal } from "@/components/ReviewModal";
 import ReviewsList from "@/components/ReviewsList";
 import { AvailableCoupons } from "@/components/AvailableCoupons";
 import { ProductImageGallery } from "@/components/ProductImageGallery";
+import { RelatedProducts } from "@/components/RelatedProducts";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 const resolveImage = (src?: string) => {
