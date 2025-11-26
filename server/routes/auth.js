@@ -23,6 +23,7 @@ function sendToken(res, user) {
 router.post('/signup', async (req, res) => {
   const { name, email, password, phone } = req.body || {};
   if (!name || !email || !password) return res.status(400).json({ ok: false, message: 'Missing fields' });
+  if (phone && !/^\d{10}$/.test(phone)) return res.status(400).json({ ok: false, message: 'Phone number must be exactly 10 digits' });
   try {
     const existing = await User.findOne({ email: String(email).toLowerCase() });
     if (existing) return res.status(400).json({ ok: false, message: 'Email already in use' });

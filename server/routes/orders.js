@@ -410,6 +410,31 @@ router.post('/:id/request-return', requireAuth, async (req, res) => {
       return res.status(400).json({ ok: false, message: 'Return reason is required' });
     }
 
+    // Validate refund method and details
+    if (refundMethod === 'bank') {
+      if (!refundBankDetails || typeof refundBankDetails !== 'object') {
+        return res.status(400).json({ ok: false, message: 'Bank details are required for bank transfer' });
+      }
+      if (!refundBankDetails.accountHolderName || !refundBankDetails.accountHolderName.trim()) {
+        return res.status(400).json({ ok: false, message: 'Account holder name is required' });
+      }
+      if (!refundBankDetails.bankName || !refundBankDetails.bankName.trim()) {
+        return res.status(400).json({ ok: false, message: 'Bank name is required' });
+      }
+      if (!refundBankDetails.accountNumber || !refundBankDetails.accountNumber.trim()) {
+        return res.status(400).json({ ok: false, message: 'Account number is required' });
+      }
+      if (!refundBankDetails.ifscCode || !refundBankDetails.ifscCode.trim()) {
+        return res.status(400).json({ ok: false, message: 'IFSC code is required' });
+      }
+    } else if (refundMethod === 'upi') {
+      if (!refundUpiId || !refundUpiId.trim()) {
+        return res.status(400).json({ ok: false, message: 'UPI ID is required' });
+      }
+    } else {
+      return res.status(400).json({ ok: false, message: 'Refund method is required (upi or bank)' });
+    }
+
     const order = await Order.findById(id);
     if (!order) {
       return res.status(404).json({ ok: false, message: 'Order not found' });
@@ -437,16 +462,16 @@ router.post('/:id/request-return', requireAuth, async (req, res) => {
     order.refundMethod = refundMethod === 'bank' ? 'bank' : 'upi';
     order.refundAmount = order.total || 0;
 
-    if (refundMethod === 'bank' && typeof refundBankDetails === 'object') {
+    if (refundMethod === 'bank') {
       order.refundBankDetails = {
-        accountHolderName: refundBankDetails.accountHolderName || '',
-        bankName: refundBankDetails.bankName || '',
-        accountNumber: refundBankDetails.accountNumber || '',
-        ifscCode: refundBankDetails.ifscCode || '',
-        branch: refundBankDetails.branch || '',
+        accountHolderName: refundBankDetails.accountHolderName.trim(),
+        bankName: refundBankDetails.bankName.trim(),
+        accountNumber: refundBankDetails.accountNumber.trim(),
+        ifscCode: refundBankDetails.ifscCode.trim(),
+        branch: refundBankDetails.branch ? refundBankDetails.branch.trim() : '',
       };
     } else {
-      order.refundUpiId = typeof refundUpiId === 'string' ? refundUpiId.trim() : '';
+      order.refundUpiId = refundUpiId.trim();
     }
 
     await order.save();

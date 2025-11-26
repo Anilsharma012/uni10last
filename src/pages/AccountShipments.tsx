@@ -11,6 +11,8 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/u
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
+import { ReturnProductForm } from "@/components/ReturnProductForm";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // Shipment types
 export type ShipmentCheckpoint = { time: string; status: string; location?: string; note?: string };
@@ -78,6 +80,7 @@ export default function AccountShipments() {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState<Shipment | null>(null);
+  const [returnDialogOpen, setReturnDialogOpen] = useState(false);
 
   useEffect(() => {
     if (loading) return;
@@ -241,6 +244,28 @@ export default function AccountShipments() {
         </div>
       </main>
 
+      <Dialog open={returnDialogOpen} onOpenChange={setReturnDialogOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Request Return</DialogTitle>
+            <DialogDescription>
+              Order #{active?.orderId.slice(0, 8)} • Provide return reason and refund details (UPI or Bank Transfer)
+            </DialogDescription>
+          </DialogHeader>
+          {active && (
+            <ReturnProductForm
+              orderId={active.orderId}
+              onSuccess={() => {
+                setReturnDialogOpen(false);
+                setOpen(false);
+                setTimeout(() => fetchShipments(), 500);
+              }}
+              onCancel={() => setReturnDialogOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
       <Drawer open={open} onOpenChange={setOpen}>
         <DrawerContent className="max-h-[80vh] overflow-y-auto">
           <DrawerHeader className="sticky top-0 bg-background border-b">
@@ -288,6 +313,19 @@ export default function AccountShipments() {
                     )}
                   </div>
                 </div>
+
+                {active.status && (active.status.toLowerCase() === 'delivered' || active.status.toLowerCase() === 'return_initiated') && (
+                  <div className="mt-4 pt-4 border-t">
+                    <Button
+                      className="w-full"
+                      variant="destructive"
+                      onClick={() => setReturnDialogOpen(true)}
+                      disabled={active.status.toLowerCase() === 'return_initiated'}
+                    >
+                      {active.status.toLowerCase() === 'return_initiated' ? 'Return Already Initiated' : 'Initiate Return'}
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </div>

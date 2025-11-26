@@ -100,6 +100,7 @@ type BillingInfoForm = {
   contactNumber: string;
   email: string;
   gstinNumber: string;
+  logo: string;
 };
 
 type IntegrationSettings = {
@@ -394,9 +395,14 @@ type ProductFormState = {
     diagramUrl: string;
   };
   colors: string[];
+  colorInventory: Array<{ color: string; qty: number }>;
   highlights: string[];
   longDescription: string;
   specs: Array<{ key: string; value: string }>;
+  discount: {
+    type: 'flat' | 'percentage';
+    value: number;
+  };
 };
 
 const EMPTY_FORM: ProductFormState = {
@@ -425,9 +431,14 @@ const EMPTY_FORM: ProductFormState = {
     diagramUrl: '',
   },
   colors: [],
+  colorInventory: [],
   highlights: [],
   longDescription: '',
   specs: [],
+  discount: {
+    type: 'flat',
+    value: 0,
+  },
 };
 
 
@@ -575,6 +586,7 @@ const Admin = () => {
   // Billing info state
   const [billingForm, setBillingForm] = useState<BillingInfoForm>({
     companyName: 'UNI10',
+    logo: '',
     address: '',
     contactNumber: '',
     email: '',
@@ -689,9 +701,17 @@ const Admin = () => {
       : (Array.isArray((product as any).attributes?.colors)
           ? (product as any).attributes.colors
           : []),
+    colorInventory: Array.isArray(product.colorInventory) ? product.colorInventory : [],
     highlights: Array.isArray(product.highlights) ? product.highlights : [],
     longDescription: product.longDescription ?? '',
     specs: Array.isArray(product.specs) ? product.specs : [],
+    discount: product.discount ? {
+      type: product.discount.type ?? 'flat',
+      value: product.discount.value ?? 0,
+    } : {
+      type: 'flat',
+      value: 0,
+    },
   });
 
     setIsDialogOpen(true);
@@ -946,6 +966,7 @@ const Admin = () => {
           contactNumber: String(data.contactNumber || ''),
           email: String(data.email || ''),
           gstinNumber: String(data.gstinNumber || ''),
+          logo: String(data.logo || ''),
         });
       } else {
         setBillingForm({
@@ -954,6 +975,7 @@ const Admin = () => {
           contactNumber: '',
           email: '',
           gstinNumber: '',
+          logo: '',
         });
       }
     } catch (e:any) {
@@ -964,6 +986,7 @@ const Admin = () => {
         contactNumber: '',
         email: '',
         gstinNumber: '',
+        logo: '',
       });
     } finally {
       setBillingLoading(false);
@@ -999,6 +1022,7 @@ const Admin = () => {
         contactNumber: billingForm.contactNumber.trim(),
         email: billingForm.email.trim(),
         gstinNumber: billingForm.gstinNumber.trim(),
+        logo: billingForm.logo.trim(),
       };
       const res = await api(`/api/admin/billing-info`, {
         method: 'POST',
@@ -1443,9 +1467,14 @@ const handleProductSubmit = async (e: React.FormEvent) => {
         colors: Array.isArray(productForm.colors)
           ? productForm.colors.filter((c) => c.trim())
           : [],
+        colorInventory: Array.isArray(productForm.colorInventory) ? productForm.colorInventory.filter(c => c.color.trim() && c.qty > 0) : [],
         highlights: Array.isArray(productForm.highlights) ? productForm.highlights.filter(h => h.trim()) : [],
         longDescription: productForm.longDescription.trim(),
         specs: Array.isArray(productForm.specs) ? productForm.specs.filter(s => s.key.trim() && s.value.trim()) : [],
+        discount: productForm.discount && productForm.discount.value > 0 ? {
+          type: productForm.discount.type,
+          value: productForm.discount.value,
+        } : undefined,
       };
 
       if (editingProduct) {
@@ -2489,6 +2518,7 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                           setProductForm((p) => ({
                             ...p,
                             colors: [...p.colors, colorInput],
+                            colorInventory: [...p.colorInventory, { color: colorInput, qty: 0 }],
                           }));
                           (e.target as HTMLInputElement).value = '';
                         }
@@ -2506,6 +2536,7 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                         setProductForm((p) => ({
                           ...p,
                           colors: [...p.colors, colorInput],
+                          colorInventory: [...p.colorInventory, { color: colorInput, qty: 0 }],
                         }));
                         input.value = '';
                       }
@@ -2531,6 +2562,7 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                             setProductForm((p) => ({
                               ...p,
                               colors: p.colors.filter((c) => c !== color),
+                              colorInventory: p.colorInventory.filter((ci) => ci.color !== color),
                             }));
                           }}
                         >
@@ -2543,6 +2575,93 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                 <p className="text-xs text-muted-foreground mt-2">
                   {productForm.colors.length === 0 ? 'Add color options by typing and clicking Add or pressing Enter.' : `${productForm.colors.length} color(s) added`}
                 </p>
+              </div>
+
+              {productForm.colors.length > 0 && (
+                <div>
+                  <Label className="block mb-3">Color-wise Stock</Label>
+                  <div className="space-y-2">
+                    {productForm.colors.map((color) => {
+                      const colorInv = productForm.colorInventory.find((ci) => ci.color === color);
+                      return (
+                        <div key={color} className="flex items-center gap-2">
+                          <span className="w-24 text-sm">{color}</span>
+                          <Input
+                            type="number"
+                            min="0"
+                            value={colorInv?.qty ?? 0}
+                            onChange={(e) => {
+                              const qty = Number(e.target.value) || 0;
+                              setProductForm((p) => {
+                                const newColorInv = [...p.colorInventory];
+                                const idx = newColorInv.findIndex((ci) => ci.color === color);
+                                if (idx !== -1) {
+                                  newColorInv[idx].qty = qty;
+                                } else {
+                                  newColorInv.push({ color, qty });
+                                }
+                                return { ...p, colorInventory: newColorInv };
+                              });
+                            }}
+                            placeholder="0"
+                            className="w-24"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Set stock quantity for each color. Products show "Out of Stock" when quantity is 0.
+                  </p>
+                </div>
+              )}
+
+              <div className="border-t border-border pt-4">
+                <h3 className="text-sm font-semibold mb-4">Discount</h3>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <Label htmlFor="discountType">Type</Label>
+                    <Select
+                      value={productForm.discount.type}
+                      onValueChange={(val) => setProductForm((p) => ({ ...p, discount: { ...p.discount, type: val as 'flat' | 'percentage' } }))}
+                    >
+                      <SelectTrigger id="discountType">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="flat">Flat (₹)</SelectItem>
+                        <SelectItem value="percentage">Percentage (%)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="discountValue">Value</Label>
+                    <Input
+                      id="discountValue"
+                      type="number"
+                      min="0"
+                      step={productForm.discount.type === 'percentage' ? '0.1' : '1'}
+                      value={productForm.discount.value}
+                      onChange={(e) => setProductForm((p) => ({ ...p, discount: { ...p.discount, value: Number(e.target.value) || 0 } }))}
+                      placeholder="0"
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <div className="text-sm p-2 bg-muted rounded">
+                      {productForm.discount.value > 0 && (
+                        <>
+                          <span className="text-xs text-muted-foreground">Final Price: </span>
+                          <span className="font-semibold">
+                            ₹{Math.max(0, productForm.discount.type === 'percentage'
+                              ? Math.round(productForm.price * (1 - productForm.discount.value / 100))
+                              : productForm.price - productForm.discount.value
+                            )}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="border-t border-border pt-4">
@@ -3742,6 +3861,26 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                   disabled={billingSaving}
                   required
                 />
+              </div>
+
+              <div>
+                <Label htmlFor="logo">Logo URL</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="logo"
+                    value={billingForm.logo}
+                    onChange={(e) => setBillingForm((prev) => ({ ...prev, logo: e.target.value }))}
+                    placeholder="e.g., https://example.com/logo.png or /uni10-logo.png"
+                    disabled={billingSaving}
+                  />
+                </div>
+                {billingForm.logo && (
+                  <div className="mt-3 flex items-center gap-2">
+                    <img src={billingForm.logo} alt="Logo preview" className="h-12 w-12 object-contain rounded border" />
+                    <span className="text-xs text-muted-foreground">Logo preview</span>
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground mt-2">Use this logo on invoices and documents. Recommended: 300x300px or less</p>
               </div>
 
               <div className="flex gap-2 pt-4">
