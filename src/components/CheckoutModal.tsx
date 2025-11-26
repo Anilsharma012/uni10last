@@ -196,6 +196,14 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
         });
         return;
       }
+      if (!/^\d{10}$/.test(phone)) {
+        toast({
+          title: "Invalid phone number",
+          description: "Phone number must be exactly 10 digits.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       // Save address to user profile
       await saveAddressIfNeeded();
@@ -294,6 +302,10 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
       toast({ title: "Missing Details", description: "Please fill all delivery details including street address", variant: "destructive" });
       return;
     }
+    if (!/^\d{10}$/.test(phone)) {
+      toast({ title: "Invalid phone number", description: "Phone number must be exactly 10 digits.", variant: "destructive" });
+      return;
+    }
     try {
       // Save address to user profile
       await saveAddressIfNeeded();
@@ -365,6 +377,10 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
   const handleCodOrder = async () => {
     if (!name || !phone || !address || !streetAddress) {
       toast({ title: "Please fill name, phone, address and street address", variant: "destructive" });
+      return;
+    }
+    if (!/^\d{10}$/.test(phone)) {
+      toast({ title: "Phone number must be exactly 10 digits", variant: "destructive" });
       return;
     }
     if (!city || !stateName || !pincode) {
@@ -540,8 +556,14 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
           />
           <input
             placeholder="Phone"
+            type="tel"
+            inputMode="numeric"
+            maxLength={10}
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+              setPhone(value);
+            }}
             className={fieldBase}
           />
           <textarea
