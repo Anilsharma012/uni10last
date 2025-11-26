@@ -100,6 +100,7 @@ type BillingInfoForm = {
   contactNumber: string;
   email: string;
   gstinNumber: string;
+  logo: string;
 };
 
 type IntegrationSettings = {
