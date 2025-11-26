@@ -144,6 +144,18 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
         : [],
       sizeChartUrl: body.sizeChartUrl || undefined,
       sizeChartTitle: body.sizeChartTitle || undefined,
+      colorInventory: Array.isArray(body.colorInventory)
+        ? body.colorInventory.map(c => ({
+            color: String(c.color || '').trim(),
+            qty: Number(c.qty || 0)
+          })).filter(c => c.color)
+        : [],
+      discount: body.discount && typeof body.discount === 'object'
+        ? {
+            type: body.discount.type === 'percentage' ? 'percentage' : 'flat',
+            value: Number(body.discount.value || 0)
+          }
+        : { type: 'flat', value: 0 },
       highlights: Array.isArray(body.highlights)
         ? body.highlights.filter(h => String(h || '').trim()).slice(0, 8)
         : [],
