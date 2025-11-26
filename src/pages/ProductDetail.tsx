@@ -204,8 +204,18 @@ const ProductDetail = () => {
     [product]
   );
 
-  // Get stock based on per-size inventory or general stock
+  // Get stock based on per-size inventory, color inventory, or general stock
   const getCurrentStock = useCallback(() => {
+    // Check color inventory if color-wise stock tracking is enabled
+    if (selectedColor && Array.isArray(product?.colorInventory)) {
+      const colorStock = product.colorInventory.find(
+        (c) => c.color === selectedColor
+      );
+      if (colorStock) {
+        return colorStock.qty ?? 0;
+      }
+    }
+
     if (
       product?.trackInventoryBySize &&
       Array.isArray(product?.sizeInventory) &&
@@ -217,7 +227,7 @@ const ProductDetail = () => {
       return sizeInfo?.qty ?? 0;
     }
     return Number(product?.stock ?? 0);
-  }, [product, selectedSize]);
+  }, [product, selectedSize, selectedColor]);
 
   const stockNum = useMemo(() => getCurrentStock(), [getCurrentStock]);
   const outOfStock = stockNum === 0;
