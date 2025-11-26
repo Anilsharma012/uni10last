@@ -72,10 +72,13 @@ const ProductSchema = new mongoose.Schema(
     },
 
     discount: {
-      type: {
-        type: { type: String, enum: ['flat', 'percentage'] },
-        value: { type: Number, default: 0 },
-      },
+      type: new mongoose.Schema(
+        {
+          type: { type: String, enum: ['flat', 'percentage'], default: 'flat' },
+          value: { type: Number, default: 0 },
+        },
+        { _id: false }
+      ),
       default: () => ({ type: 'flat', value: 0 }),
     },
 
