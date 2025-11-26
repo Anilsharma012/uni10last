@@ -53,7 +53,7 @@ export function ReturnProductForm({ orderId, onSuccess, onCancel }: ReturnProduc
       }
 
       const payload: any = {
-        returnReason: reason,
+        reason: reason,
         refundMethod: refundMethod,
       };
 

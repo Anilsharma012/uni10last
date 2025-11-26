@@ -25,6 +25,13 @@ interface ReturnOrder {
   returnStatus?: 'Pending' | 'Approved' | 'Rejected' | 'None';
   returnReason?: string;
   refundUpiId?: string;
+  refundMethod?: 'upi' | 'bank';
+  refundBankDetails?: {
+    accountHolderName: string;
+    bankName: string;
+    accountNumber: string;
+    ifscCode: string;
+  };
   returnRequestedAt?: string;
 }
 
@@ -86,9 +93,12 @@ export default function AdminReturns() {
 
   const openEmail = (row: ReturnOrder) => {
     const to = (row.userId && typeof row.userId === 'object') ? (row.userId.email || '') : '';
+    const refundText = row.refundMethod === 'bank' && row.refundBankDetails
+      ? `Bank Account: ${row.refundBankDetails.accountHolderName}, ${row.refundBankDetails.bankName}, A/C: ${row.refundBankDetails.accountNumber}, IFSC: ${row.refundBankDetails.ifscCode}`
+      : `UPI: ${row.refundUpiId || '-'}`;
     setEmailTo(to);
     setEmailSubject('Refund processed for order #' + row._id.slice(0,8).toUpperCase());
-    setEmailHtml(`<p>Hello ${(row.userId as any)?.name || ''},</p><p>Your refund for order #${row._id.slice(0,8).toUpperCase()} has been processed to UPI <b>${row.refundUpiId || '-'}</b>.</p>`);
+    setEmailHtml(`<p>Hello ${(row.userId as any)?.name || ''},</p><p>Your refund for order #${row._id.slice(0,8).toUpperCase()} has been processed to ${refundText}.</p>`);
     setEmailOpen(true);
   };
 
@@ -127,7 +137,7 @@ export default function AdminReturns() {
                   <th className="py-2">User Name & Email</th>
                   <th className="py-2">Product Details</th>
                   <th className="py-2">Return Reason</th>
-                  <th className="py-2">UPI ID</th>
+                  <th className="py-2">Refund Details</th>
                   <th className="py-2">Date</th>
                   <th className="py-2">Status</th>
                   <th className="py-2">Actions</th>
@@ -164,7 +174,18 @@ export default function AdminReturns() {
                         <td className="py-2 max-w-[240px] pr-4">
                           <div className="line-clamp-2">{row.returnReason || '-'}</div>
                         </td>
-                        <td className="py-2">{row.refundUpiId || '-'}</td>
+                        <td className="py-2 max-w-[300px]">
+                          {row.refundMethod === 'bank' && row.refundBankDetails ? (
+                            <div className="text-xs space-y-1">
+                              <div><span className="font-semibold">Name:</span> {row.refundBankDetails.accountHolderName}</div>
+                              <div><span className="font-semibold">Bank:</span> {row.refundBankDetails.bankName}</div>
+                              <div><span className="font-semibold">A/C:</span> {row.refundBankDetails.accountNumber}</div>
+                              <div><span className="font-semibold">IFSC:</span> {row.refundBankDetails.ifscCode}</div>
+                            </div>
+                          ) : (
+                            <div className="text-sm">UPI: <span className="font-mono">{row.refundUpiId || '-'}</span></div>
+                          )}
+                        </td>
                         <td className="py-2">{new Date(d as any).toLocaleString()}</td>
                         <td className="py-2">
                           <Select value={row.returnStatus || 'Pending'} onValueChange={(v:any)=>updateStatus(row._id, v)}>

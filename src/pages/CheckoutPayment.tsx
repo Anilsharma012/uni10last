@@ -10,6 +10,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
 import { api } from '@/lib/api';
+import { AddressSelector, Address as AddressType } from '@/components/AddressSelector';
 
 type PaymentSettings = {
   upiQrImage: string;
@@ -75,6 +76,7 @@ const CheckoutPayment = () => {
 
   const [shippingCharges, setShippingCharges] = useState(0);
   const [fetchingCharges, setFetchingCharges] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState<AddressType | null>(null);
 
   const buildUpiUri = (scheme?: string) => {
     const pa = encodeURIComponent(paymentSettings?.upiId || '');
@@ -137,6 +139,21 @@ const CheckoutPayment = () => {
         }
       }, 1200);
     }
+  };
+
+  const handleAddressSelect = (address: AddressType) => {
+    setSelectedAddress(address);
+    setCustomerDetails({
+      ...customerDetails,
+      name: address.name,
+      phone: address.phone,
+      streetAddress: address.houseNumber,
+      address: address.area,
+      city: address.city,
+      state: address.state,
+      pincode: address.pincode,
+      landmark: address.landmark || '',
+    });
   };
 
   useEffect(() => {
@@ -218,6 +235,9 @@ const CheckoutPayment = () => {
     if (!validateCustomerDetails()) return;
 
     try {
+      // Save address to user profile
+      await saveAddressIfNeeded();
+
       setSubmitting(true);
 
       const totalWithShipping = total + shippingCharges;
@@ -336,9 +356,38 @@ const CheckoutPayment = () => {
     }
   };
 
+  const saveAddressIfNeeded = async () => {
+    // If address is already selected from saved addresses, no need to save
+    if (selectedAddress) {
+      return;
+    }
+
+    try {
+      await api('/api/auth/addresses', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: customerDetails.name.trim(),
+          phone: customerDetails.phone.trim(),
+          houseNumber: customerDetails.streetAddress.trim(),
+          area: customerDetails.address.trim(),
+          city: customerDetails.city.trim(),
+          state: customerDetails.state.trim(),
+          pincode: customerDetails.pincode.trim(),
+          landmark: customerDetails.landmark.trim(),
+        }),
+      });
+    } catch (error) {
+      console.warn('Failed to save address:', error);
+      // Don't fail the order if address save fails
+    }
+  };
+
   const handleRazorpayPayment = async () => {
     try {
       if (!validateCustomerDetails()) return;
+
+      // Save address to user profile
+      await saveAddressIfNeeded();
 
       setSubmitting(true);
 
@@ -548,6 +597,9 @@ const CheckoutPayment = () => {
     if (!validateCustomerDetails()) return;
 
     try {
+      // Save address to user profile
+      await saveAddressIfNeeded();
+
       setSubmitting(true);
 
       const totalWithShipping = total + shippingCharges;
@@ -658,6 +710,15 @@ const CheckoutPayment = () => {
             {/* Delivery Details */}
             <Card className="p-4 rounded-xl text-sm shadow-sm border border-gray-200">
               <h2 className="text-lg font-semibold mb-4">Delivery Details</h2>
+
+              {/* Address Selector */}
+              <div className="mb-6 pb-6 border-b">
+                <AddressSelector
+                  onAddressSelect={handleAddressSelect}
+                  selectedAddressId={selectedAddress?._id}
+                />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="name">Full Name *</Label>

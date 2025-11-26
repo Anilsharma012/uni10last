@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Loader2, Copy, Check } from "lucide-react";
 import { api } from "@/lib/api";
+import { AddressSelector, Address as AddressType } from "@/components/AddressSelector";
 
 type Props = {
   open: boolean;
@@ -71,6 +72,7 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
   const [couponCode, setCouponCode] = useState("");
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState<string | null>(null);
+  const [selectedAddress, setSelectedAddress] = useState<AddressType | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -171,6 +173,18 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
     toast({ title: "Coupon removed" });
   };
 
+  const handleAddressSelect = (address: AddressType) => {
+    setSelectedAddress(address);
+    setName(address.name);
+    setPhone(address.phone);
+    setStreetAddress(address.houseNumber);
+    setAddress(address.area);
+    setCity(address.city);
+    setStateName(address.state);
+    setPincode(address.pincode);
+    setLandmark(address.landmark || "");
+  };
+
   async function handleRazorpayPayment() {
     try {
       // validations (landmark optional rakha hai)
@@ -182,6 +196,9 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
         });
         return;
       }
+
+      // Save address to user profile
+      await saveAddressIfNeeded();
 
       setSubmitting(true);
 
@@ -278,6 +295,9 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
       return;
     }
     try {
+      // Save address to user profile
+      await saveAddressIfNeeded();
+
       setSubmitting(true);
       const response = await fetch("/api/payment/manual", {
         method: "POST",
@@ -314,6 +334,33 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
     }
   }
 
+  // Save address to user profile if not already saved
+  const saveAddressIfNeeded = async () => {
+    // If address is already selected from saved addresses, no need to save
+    if (selectedAddress) {
+      return;
+    }
+
+    try {
+      await api('/api/auth/addresses', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: name.trim(),
+          phone: phone.trim(),
+          houseNumber: streetAddress.trim(),
+          area: address.trim(),
+          city: city.trim(),
+          state: stateName.trim(),
+          pincode: pincode.trim(),
+          landmark: landmark.trim(),
+        }),
+      });
+    } catch (error) {
+      console.warn('Failed to save address:', error);
+      // Don't fail the order if address save fails
+    }
+  };
+
   // ✅ COD LOGIC from second code – proper order create + placeOrder + localStorage
   const handleCodOrder = async () => {
     if (!name || !phone || !address || !streetAddress) {
@@ -330,6 +377,9 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
     }
 
     setSubmitting(true);
+
+    // Save address to user profile
+    await saveAddressIfNeeded();
 
     const payload: any = {
       name,
@@ -471,6 +521,14 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
           <DialogTitle>Checkout</DialogTitle>
           <DialogDescription>Complete your purchase</DialogDescription>
         </DialogHeader>
+
+        {/* Address Selector */}
+        <div className="border-b border-border pb-4 mt-4">
+          <AddressSelector
+            onAddressSelect={handleAddressSelect}
+            selectedAddressId={selectedAddress?._id}
+          />
+        </div>
 
         {/* User Details */}
         <div className="space-y-3 mt-4">

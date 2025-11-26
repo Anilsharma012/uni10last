@@ -1,14 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Card } from '@/components/ui/card';
+import { toast } from 'sonner';
 import { api } from '@/lib/api';
-import { useToast } from '@/hooks/use-toast';
-import { Trash2, Plus, CheckCircle2 } from 'lucide-react';
+import { MapPin, Plus, X } from 'lucide-react';
 
-interface Address {
-  _id?: string;
+export interface Address {
+  _id: string;
   name: string;
   phone: string;
   houseNumber: string;
@@ -21,17 +21,17 @@ interface Address {
 }
 
 interface AddressSelectorProps {
-  onAddressSelected: (address: Address) => void;
-  onAddressCreated?: () => void;
+  onAddressSelect: (address: Address) => void;
+  selectedAddressId?: string;
 }
 
-export const AddressSelector = ({ onAddressSelected, onAddressCreated }: AddressSelectorProps) => {
-  const { toast } = useToast();
+export const AddressSelector: React.FC<AddressSelectorProps> = ({ onAddressSelect, selectedAddressId }) => {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
-  const [formData, setFormData] = useState<Address>({
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const [formData, setFormData] = useState({
     name: '',
     phone: '',
     houseNumber: '',
@@ -41,7 +41,6 @@ export const AddressSelector = ({ onAddressSelected, onAddressCreated }: Address
     pincode: '',
     landmark: '',
   });
-  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     fetchAddresses();
@@ -53,39 +52,65 @@ export const AddressSelector = ({ onAddressSelected, onAddressCreated }: Address
       const { ok, json } = await api('/api/auth/addresses');
       if (ok && Array.isArray(json?.data)) {
         setAddresses(json.data);
-        const defaultAddr = json.data.find((a: Address) => a.isDefault);
-        if (defaultAddr?._id) {
-          setSelectedAddressId(defaultAddr._id);
-          onAddressSelected(defaultAddr);
-        }
       }
-    } catch (e) {
-      console.error('Failed to fetch addresses:', e);
+    } catch (error) {
+      console.error('Failed to fetch addresses:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAddAddress = async () => {
-    if (!formData.name || !formData.phone || !formData.houseNumber || !formData.area || !formData.city || !formData.state || !formData.pincode) {
-      toast({
-        title: 'Missing Fields',
-        description: 'Please fill in all required fields',
-        variant: 'destructive',
-      });
+  const handleAddAddress = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!formData.name.trim()) {
+      toast.error('Name is required');
+      return;
+    }
+    if (!formData.phone.trim()) {
+      toast.error('Phone is required');
+      return;
+    }
+    if (!formData.houseNumber.trim()) {
+      toast.error('House number/Street address is required');
+      return;
+    }
+    if (!formData.area.trim()) {
+      toast.error('Area/Address is required');
+      return;
+    }
+    if (!formData.city.trim()) {
+      toast.error('City is required');
+      return;
+    }
+    if (!formData.state.trim()) {
+      toast.error('State is required');
+      return;
+    }
+    if (!formData.pincode.trim()) {
+      toast.error('Pincode is required');
       return;
     }
 
     try {
-      setSubmitting(true);
+      setSaving(true);
       const { ok, json } = await api('/api/auth/addresses', {
         method: 'POST',
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          phone: formData.phone.trim(),
+          houseNumber: formData.houseNumber.trim(),
+          area: formData.area.trim(),
+          city: formData.city.trim(),
+          state: formData.state.trim(),
+          pincode: formData.pincode.trim(),
+          landmark: formData.landmark.trim(),
+          isDefault: addresses.length === 0,
+        }),
       });
 
       if (ok && Array.isArray(json?.data)) {
         setAddresses(json.data);
-        setShowForm(false);
         setFormData({
           name: '',
           phone: '',
@@ -96,228 +121,163 @@ export const AddressSelector = ({ onAddressSelected, onAddressCreated }: Address
           pincode: '',
           landmark: '',
         });
-        toast({
-          title: 'Address Added',
-          description: 'Your address has been saved successfully',
-        });
-        if (onAddressCreated) {
-          onAddressCreated();
-        }
+        setShowAddForm(false);
+        toast.success('Address added successfully');
+
+        const newAddress = json.data[json.data.length - 1];
+        onAddressSelect(newAddress);
+      } else {
+        toast.error(json?.message || 'Failed to add address');
       }
-    } catch (e) {
-      console.error('Failed to add address:', e);
-      toast({
-        title: 'Error',
-        description: 'Failed to add address',
-        variant: 'destructive',
-      });
+    } catch (error) {
+      console.error('Error adding address:', error);
+      toast.error('Failed to add address');
     } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleDeleteAddress = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this address?')) return;
-
-    try {
-      const { ok, json } = await api(`/api/auth/addresses/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (ok && Array.isArray(json?.data)) {
-        setAddresses(json.data);
-        if (selectedAddressId === id) {
-          setSelectedAddressId(null);
-        }
-        toast({
-          title: 'Address Deleted',
-          description: 'Your address has been removed',
-        });
-      }
-    } catch (e) {
-      console.error('Failed to delete address:', e);
-      toast({
-        title: 'Error',
-        description: 'Failed to delete address',
-        variant: 'destructive',
-      });
+      setSaving(false);
     }
   };
 
   if (loading) {
     return (
-      <div className="space-y-3">
-        {Array(2).fill(null).map((_, i) => (
-          <div key={i} className="h-24 bg-muted rounded-lg animate-pulse" />
-        ))}
+      <div className="space-y-2">
+        <div className="h-4 bg-muted rounded animate-pulse" />
+        <div className="h-4 bg-muted rounded animate-pulse" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {addresses.length > 0 && (
-        <div className="space-y-3">
-          {addresses.map((address) => (
-            <Card
-              key={address._id}
-              className={`p-4 cursor-pointer transition-all ${
-                selectedAddressId === address._id
-                  ? 'border-primary bg-primary/5'
-                  : 'hover:border-primary'
-              }`}
-              onClick={() => {
-                setSelectedAddressId(address._id || '');
-                onAddressSelected(address);
-              }}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <p className="font-semibold">{address.name}</p>
-                    {selectedAddressId === address._id && (
-                      <CheckCircle2 className="h-4 w-4 text-primary" />
+    <div className="space-y-3">
+      {/* Saved Addresses */}
+      {addresses.length > 0 && !showAddForm && (
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Saved Addresses</Label>
+          <div className="space-y-2 max-h-[300px] overflow-y-auto">
+            {addresses.map((address) => (
+              <Card
+                key={address._id}
+                className={`p-3 cursor-pointer transition-all ${
+                  selectedAddressId === address._id
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border hover:border-primary/50'
+                }`}
+                onClick={() => onAddressSelect(address)}
+              >
+                <div className="flex items-start gap-3">
+                  <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-sm">{address.name}</div>
+                    <div className="text-xs text-muted-foreground space-y-1 mt-1">
+                      <div>{address.houseNumber}, {address.area}</div>
+                      <div>{address.city}, {address.state} {address.pincode}</div>
+                      {address.landmark && <div>Landmark: {address.landmark}</div>}
+                      <div>Phone: {address.phone}</div>
+                    </div>
+                    {address.isDefault && (
+                      <div className="mt-2 inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                        Default
+                      </div>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {address.houseNumber}, {address.area}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {address.city}, {address.state} {address.pincode}
-                  </p>
-                  {address.landmark && (
-                    <p className="text-sm text-muted-foreground">
-                      Near: {address.landmark}
-                    </p>
+                  {selectedAddressId === address._id && (
+                    <div className="text-primary text-sm font-semibold">✓</div>
                   )}
-                  <p className="text-sm text-muted-foreground mt-2">
-                    {address.phone}
-                  </p>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteAddress(address._id || '');
-                  }}
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            ))}
+          </div>
         </div>
       )}
 
-      {showForm ? (
-        <Card className="p-4 space-y-4">
-          <h3 className="font-semibold">Add New Address</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="name" className="text-xs sm:text-sm">Name</Label>
-              <Input
-                id="name"
-                placeholder="Full name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="text-xs sm:text-sm"
-              />
-            </div>
-            <div>
-              <Label htmlFor="phone" className="text-xs sm:text-sm">Phone</Label>
-              <Input
-                id="phone"
-                placeholder="Mobile number"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="text-xs sm:text-sm"
-              />
-            </div>
-            <div>
-              <Label htmlFor="houseNumber" className="text-xs sm:text-sm">House No.</Label>
-              <Input
-                id="houseNumber"
-                placeholder="House number"
-                value={formData.houseNumber}
-                onChange={(e) => setFormData({ ...formData, houseNumber: e.target.value })}
-                className="text-xs sm:text-sm"
-              />
-            </div>
-            <div>
-              <Label htmlFor="area" className="text-xs sm:text-sm">Area</Label>
-              <Input
-                id="area"
-                placeholder="Area/Street"
-                value={formData.area}
-                onChange={(e) => setFormData({ ...formData, area: e.target.value })}
-                className="text-xs sm:text-sm"
-              />
-            </div>
-            <div>
-              <Label htmlFor="city" className="text-xs sm:text-sm">City</Label>
-              <Input
-                id="city"
-                placeholder="City"
-                value={formData.city}
-                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                className="text-xs sm:text-sm"
-              />
-            </div>
-            <div>
-              <Label htmlFor="state" className="text-xs sm:text-sm">State</Label>
-              <Input
-                id="state"
-                placeholder="State"
-                value={formData.state}
-                onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                className="text-xs sm:text-sm"
-              />
-            </div>
-            <div>
-              <Label htmlFor="pincode" className="text-xs sm:text-sm">Pincode</Label>
-              <Input
-                id="pincode"
-                placeholder="Pincode"
-                value={formData.pincode}
-                onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
-                className="text-xs sm:text-sm"
-              />
-            </div>
-            <div>
-              <Label htmlFor="landmark" className="text-xs sm:text-sm">Landmark (Optional)</Label>
-              <Input
-                id="landmark"
-                placeholder="Landmark"
-                value={formData.landmark}
-                onChange={(e) => setFormData({ ...formData, landmark: e.target.value })}
-                className="text-xs sm:text-sm"
-              />
-            </div>
+      {/* Add New Address Form */}
+      {showAddForm ? (
+        <div className="border border-border rounded-lg p-4 bg-muted/30 space-y-3">
+          <div className="flex items-center justify-between mb-2">
+            <Label className="text-sm font-medium">Add New Address</Label>
+            <button
+              type="button"
+              onClick={() => setShowAddForm(false)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
-          <div className="flex gap-2 justify-end">
+
+          <div className="space-y-2">
+            <Input
+              placeholder="Full Name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              disabled={saving}
+            />
+            <Input
+              placeholder="Phone Number"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              disabled={saving}
+            />
+            <Input
+              placeholder="House No., Building Name"
+              value={formData.houseNumber}
+              onChange={(e) => setFormData({ ...formData, houseNumber: e.target.value })}
+              disabled={saving}
+            />
+            <Input
+              placeholder="Road name, Area, Colony"
+              value={formData.area}
+              onChange={(e) => setFormData({ ...formData, area: e.target.value })}
+              disabled={saving}
+            />
+            <Input
+              placeholder="City"
+              value={formData.city}
+              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+              disabled={saving}
+            />
+            <Input
+              placeholder="State"
+              value={formData.state}
+              onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+              disabled={saving}
+            />
+            <Input
+              placeholder="Pincode"
+              value={formData.pincode}
+              onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+              disabled={saving}
+            />
+            <Input
+              placeholder="Landmark (optional)"
+              value={formData.landmark}
+              onChange={(e) => setFormData({ ...formData, landmark: e.target.value })}
+              disabled={saving}
+            />
+          </div>
+
+          <div className="flex gap-2 pt-2">
             <Button
-              variant="outline"
               size="sm"
-              onClick={() => setShowForm(false)}
+              variant="outline"
+              onClick={() => setShowAddForm(false)}
+              disabled={saving}
             >
               Cancel
             </Button>
             <Button
               size="sm"
               onClick={handleAddAddress}
-              disabled={submitting}
+              disabled={saving}
             >
-              {submitting ? 'Saving...' : 'Save Address'}
+              {saving ? 'Saving...' : 'Save Address'}
             </Button>
           </div>
-        </Card>
+        </div>
       ) : (
         <Button
           variant="outline"
+          size="sm"
+          onClick={() => setShowAddForm(true)}
           className="w-full"
-          onClick={() => setShowForm(true)}
         >
           <Plus className="h-4 w-4 mr-2" />
           Add New Address
