@@ -76,6 +76,7 @@ const CheckoutPayment = () => {
 
   const [shippingCharges, setShippingCharges] = useState(0);
   const [fetchingCharges, setFetchingCharges] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState<AddressType | null>(null);
 
   const buildUpiUri = (scheme?: string) => {
     const pa = encodeURIComponent(paymentSettings?.upiId || '');
