@@ -528,25 +528,36 @@ const ProductDetail = () => {
                   Color
                 </label>
                 <div className="flex flex-wrap gap-2 sm:gap-3">
-                  {product.colors.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      onClick={() => setSelectedColor(c)}
-                      className={cn(
-                        "flex items-center gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border text-xs sm:text-sm transition-colors",
-                        selectedColor === c
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-transparent border-border hover:border-primary"
-                      )}
-                    >
-                      <span
-                        className="h-4 w-4 rounded-full border border-border"
-                        style={{ backgroundColor: colorToCss(c) }}
-                      />
-                      <span>{c}</span>
-                    </button>
-                  ))}
+                  {product.colors.map((c) => {
+                    const colorStock = Array.isArray(product.colorInventory)
+                      ? product.colorInventory.find(ci => ci.color === c)?.qty ?? 0
+                      : Number(product.stock ?? 0);
+                    const isOutOfStock = colorStock === 0;
+
+                    return (
+                      <button
+                        key={c}
+                        type="button"
+                        disabled={isOutOfStock}
+                        onClick={() => setSelectedColor(c)}
+                        className={cn(
+                          "flex items-center gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border text-xs sm:text-sm transition-colors",
+                          isOutOfStock
+                            ? "opacity-50 cursor-not-allowed bg-muted border-border text-muted-foreground"
+                            : selectedColor === c
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-transparent border-border hover:border-primary"
+                        )}
+                      >
+                        <span
+                          className="h-4 w-4 rounded-full border border-current"
+                          style={{ backgroundColor: colorToCss(c) }}
+                        />
+                        <span>{c}</span>
+                        {isOutOfStock && <span className="text-xs">Out of Stock</span>}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
