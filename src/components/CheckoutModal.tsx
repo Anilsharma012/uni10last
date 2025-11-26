@@ -367,6 +367,10 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
       toast({ title: "Please fill name, phone, address and street address", variant: "destructive" });
       return;
     }
+    if (!/^\d{10}$/.test(phone)) {
+      toast({ title: "Phone number must be exactly 10 digits", variant: "destructive" });
+      return;
+    }
     if (!city || !stateName || !pincode) {
       toast({ title: "Please add city, state and pincode", variant: "destructive" });
       return;
