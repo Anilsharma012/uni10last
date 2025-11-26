@@ -367,7 +367,7 @@ router.post('/:id/email', requireAuth, async (req, res) => {
 router.post('/:id/request-return', requireAuth, async (req, res) => {
   try {
     const { id } = req.params;
-    const { reason, upiId, photoUrl } = req.body || {};
+    const { reason, refundMethod, refundUpiId, refundBankDetails, photoUrl } = req.body || {};
 
     if (!reason || !reason.trim()) {
       return res.status(400).json({ ok: false, message: 'Return reason is required' });
@@ -394,10 +394,24 @@ router.post('/:id/request-return', requireAuth, async (req, res) => {
     }
 
     order.returnReason = reason.trim();
-    order.refundUpiId = typeof upiId === 'string' ? upiId.trim() : '';
     order.returnPhoto = typeof photoUrl === 'string' ? photoUrl.trim() : '';
     order.returnRequestedAt = new Date();
     order.returnStatus = 'Pending';
+    order.refundMethod = refundMethod === 'bank' ? 'bank' : 'upi';
+    order.refundAmount = order.total || 0;
+
+    if (refundMethod === 'bank' && typeof refundBankDetails === 'object') {
+      order.refundBankDetails = {
+        accountHolderName: refundBankDetails.accountHolderName || '',
+        bankName: refundBankDetails.bankName || '',
+        accountNumber: refundBankDetails.accountNumber || '',
+        ifscCode: refundBankDetails.ifscCode || '',
+        branch: refundBankDetails.branch || '',
+      };
+    } else {
+      order.refundUpiId = typeof refundUpiId === 'string' ? refundUpiId.trim() : '';
+    }
+
     await order.save();
 
     return res.json({ ok: true, data: order, message: 'Return request submitted' });
