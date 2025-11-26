@@ -61,6 +61,7 @@ export default function AdminReturns() {
   const { user, loading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [rows, setRows] = useState<ReturnOrder[]>([]);
   const [fetching, setFetching] = useState(true);
   const [emailOpen, setEmailOpen] = useState(false);
