@@ -675,6 +675,15 @@ const CheckoutPayment = () => {
             {/* Delivery Details */}
             <Card className="p-4 rounded-xl text-sm shadow-sm border border-gray-200">
               <h2 className="text-lg font-semibold mb-4">Delivery Details</h2>
+
+              {/* Address Selector */}
+              <div className="mb-6 pb-6 border-b">
+                <AddressSelector
+                  onAddressSelect={handleAddressSelect}
+                  selectedAddressId={selectedAddress?._id}
+                />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="name">Full Name *</Label>
