@@ -383,11 +383,11 @@ const MyOrders = () => {
                               Request Return
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="sm:max-w-[500px]">
+                          <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
                             <DialogHeader>
                               <DialogTitle>Request Return</DialogTitle>
                               <DialogDescription>
-                                Reason, refund UPI ID, and an optional photo are required for processing.
+                                Reason, refund method (UPI or Bank), and an optional photo are required for processing.
                               </DialogDescription>
                             </DialogHeader>
 
@@ -417,16 +417,96 @@ const MyOrders = () => {
                               </div>
 
                               <div className="space-y-2">
-                                <Label htmlFor="upi">UPI ID for Refund *</Label>
-                                <Input
-                                  id="upi"
-                                  placeholder="example@upi"
-                                  value={upiId}
-                                  onChange={(e) => setUpiId(e.target.value)}
-                                  disabled={submitting}
-                                  className="text-sm"
-                                />
+                                <Label>Refund Method *</Label>
+                                <div className="flex gap-4">
+                                  <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                      type="radio"
+                                      name="refundMethod"
+                                      value="upi"
+                                      checked={refundMethod === 'upi'}
+                                      onChange={() => setRefundMethod('upi')}
+                                      disabled={submitting}
+                                    />
+                                    <span className="text-sm">UPI</span>
+                                  </label>
+                                  <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                      type="radio"
+                                      name="refundMethod"
+                                      value="bank"
+                                      checked={refundMethod === 'bank'}
+                                      onChange={() => setRefundMethod('bank')}
+                                      disabled={submitting}
+                                    />
+                                    <span className="text-sm">Bank Transfer</span>
+                                  </label>
+                                </div>
                               </div>
+
+                              {refundMethod === 'upi' ? (
+                                <div className="space-y-2">
+                                  <Label htmlFor="upi">UPI ID for Refund *</Label>
+                                  <Input
+                                    id="upi"
+                                    placeholder="example@upi"
+                                    value={upiId}
+                                    onChange={(e) => setUpiId(e.target.value)}
+                                    disabled={submitting}
+                                    className="text-sm"
+                                  />
+                                </div>
+                              ) : (
+                                <div className="space-y-3 border border-gray-200 rounded-lg p-4 bg-gray-50">
+                                  <div className="space-y-2">
+                                    <Label htmlFor="accountHolder">Account Holder Name *</Label>
+                                    <Input
+                                      id="accountHolder"
+                                      placeholder="Full name as per bank account"
+                                      value={bankDetails.accountHolderName}
+                                      onChange={(e) => setBankDetails({ ...bankDetails, accountHolderName: e.target.value })}
+                                      disabled={submitting}
+                                      className="text-sm"
+                                    />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <Label htmlFor="bankName">Bank Name *</Label>
+                                    <Input
+                                      id="bankName"
+                                      placeholder="e.g., State Bank of India"
+                                      value={bankDetails.bankName}
+                                      onChange={(e) => setBankDetails({ ...bankDetails, bankName: e.target.value })}
+                                      disabled={submitting}
+                                      className="text-sm"
+                                    />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <Label htmlFor="accountNumber">Account Number *</Label>
+                                    <Input
+                                      id="accountNumber"
+                                      placeholder="Your bank account number"
+                                      value={bankDetails.accountNumber}
+                                      onChange={(e) => setBankDetails({ ...bankDetails, accountNumber: e.target.value })}
+                                      disabled={submitting}
+                                      className="text-sm"
+                                    />
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <Label htmlFor="ifscCode">IFSC Code *</Label>
+                                    <Input
+                                      id="ifscCode"
+                                      placeholder="e.g., SBIN0001234"
+                                      value={bankDetails.ifscCode}
+                                      onChange={(e) => setBankDetails({ ...bankDetails, ifscCode: e.target.value })}
+                                      disabled={submitting}
+                                      className="text-sm"
+                                    />
+                                  </div>
+                                </div>
+                              )}
 
                               <div className="space-y-2">
                                 <Label htmlFor="photo">Optional Photo</Label>
@@ -450,6 +530,14 @@ const MyOrders = () => {
                                 onClick={() => {
                                   setReturnDialogOpen(false);
                                   setReturnReason('');
+                                  setRefundMethod('upi');
+                                  setUpiId('');
+                                  setBankDetails({
+                                    accountHolderName: '',
+                                    bankName: '',
+                                    accountNumber: '',
+                                    ifscCode: '',
+                                  });
                                   setSelectedOrderId(null);
                                 }}
                                 disabled={submitting}
