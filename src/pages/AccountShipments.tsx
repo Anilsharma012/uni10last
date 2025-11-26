@@ -244,6 +244,28 @@ export default function AccountShipments() {
         </div>
       </main>
 
+      <Dialog open={returnDialogOpen} onOpenChange={setReturnDialogOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Return Request</DialogTitle>
+            <DialogDescription>
+              Order #{active?.orderId.slice(0, 8)}
+            </DialogDescription>
+          </DialogHeader>
+          {active && (
+            <ReturnProductForm
+              orderId={active.orderId}
+              onSuccess={() => {
+                setReturnDialogOpen(false);
+                setOpen(false);
+                setTimeout(() => fetchShipments(), 500);
+              }}
+              onCancel={() => setReturnDialogOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
       <Drawer open={open} onOpenChange={setOpen}>
         <DrawerContent className="max-h-[80vh] overflow-y-auto">
           <DrawerHeader className="sticky top-0 bg-background border-b">
