@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Loader2, Copy, Check } from "lucide-react";
 import { api } from "@/lib/api";
+import { AddressSelector, Address as AddressType } from "@/components/AddressSelector";
 
 type Props = {
   open: boolean;
