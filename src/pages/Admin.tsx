@@ -3863,6 +3863,26 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                 />
               </div>
 
+              <div>
+                <Label htmlFor="logo">Logo URL</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="logo"
+                    value={billingForm.logo}
+                    onChange={(e) => setBillingForm((prev) => ({ ...prev, logo: e.target.value }))}
+                    placeholder="e.g., https://example.com/logo.png or /uni10-logo.png"
+                    disabled={billingSaving}
+                  />
+                </div>
+                {billingForm.logo && (
+                  <div className="mt-3 flex items-center gap-2">
+                    <img src={billingForm.logo} alt="Logo preview" className="h-12 w-12 object-contain rounded border" />
+                    <span className="text-xs text-muted-foreground">Logo preview</span>
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground mt-2">Use this logo on invoices and documents. Recommended: 300x300px or less</p>
+              </div>
+
               <div className="flex gap-2 pt-4">
                 <Button type="submit" disabled={billingSaving || billingLoading} className="flex-1 md:flex-none">
                   {billingSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
