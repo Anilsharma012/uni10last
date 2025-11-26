@@ -3,6 +3,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Heart, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,6 +20,10 @@ type ProductRow = {
   stock?: number;
   image_url?: string;
   images?: string[];
+  discount?: {
+    type: 'flat' | 'percentage';
+    value: number;
+  };
 };
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
