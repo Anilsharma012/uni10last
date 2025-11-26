@@ -260,14 +260,70 @@ export default function SupportCenter() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="container mx-auto px-4 pt-24 pb-12">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Support Center</h1>
-          <p className="text-muted-foreground">Manage customer support tickets</p>
+        {/* Mobile Sidebar Toggle */}
+        <div className="md:hidden mb-4 flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+            <Menu className="h-4 w-4" />
+          </Button>
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+        <div className="flex flex-col md:flex-row gap-4 md:gap-8">
+          {/* Sidebar - Hidden on mobile, shown with toggle or visible on md+ */}
+          <aside
+            className={cn(
+              'transition-all duration-300 ease-in-out',
+              'w-full md:w-64',
+              isSidebarOpen ? 'block' : 'hidden md:block'
+            )}
+          >
+            <div className="bg-card border border-border rounded-lg p-3 sm:p-4 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto">
+              <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+                <LayoutDashboard className="h-4 w-4 flex-shrink-0" />
+                <span className="truncate">Admin Navigation</span>
+              </div>
+              <div className="mt-4 space-y-1">
+                {NAV_ITEMS.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = item.id === 'support';
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        if (item.id === 'support') {
+                          setIsSidebarOpen(false);
+                        } else if (item.id === 'returns') {
+                          navigate('/admin/returns');
+                          setIsSidebarOpen(false);
+                        } else {
+                          navigate('/admin');
+                          setIsSidebarOpen(false);
+                        }
+                      }}
+                      className={cn(
+                        'w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                        isActive
+                          ? 'bg-primary text-primary-foreground shadow'
+                          : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                      )}
+                    >
+                      <Icon className="h-4 w-4 flex-shrink-0" />
+                      <span className="truncate">{item.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </aside>
+
+          <section className="flex-1 min-w-0 space-y-4 sm:space-y-6">
+            {/* Header */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold mb-2">Support Center</h1>
+              <p className="text-muted-foreground">Manage customer support tickets</p>
+            </div>
+
+            {/* Filters */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <div className="flex-1">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -331,6 +387,8 @@ export default function SupportCenter() {
             ))}
           </div>
         )}
+          </section>
+        </div>
       </main>
 
       {/* Drawer - Ticket Detail */}
