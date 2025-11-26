@@ -71,6 +71,10 @@ export const AddressSelector: React.FC<AddressSelectorProps> = ({ onAddressSelec
       toast.error('Phone is required');
       return;
     }
+    if (!/^\d{10}$/.test(formData.phone.trim())) {
+      toast.error('Phone number must be exactly 10 digits');
+      return;
+    }
     if (!formData.houseNumber.trim()) {
       toast.error('House number/Street address is required');
       return;
