@@ -561,7 +561,7 @@ router.post('/billing-info', requireAuth, requireAdmin, async (req, res) => {
 // PATCH /api/admin/billing-info - Update company billing info
 router.patch('/billing-info', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const { companyName, address, contactNumber, email, gstinNumber } = req.body || {};
+    const { companyName, address, contactNumber, email, gstinNumber, logo } = req.body || {};
 
     let billingInfo = await BillingInfo.findOne();
     if (!billingInfo) {
@@ -571,6 +571,7 @@ router.patch('/billing-info', requireAuth, requireAdmin, async (req, res) => {
         contactNumber: contactNumber || '',
         email: email || '',
         gstinNumber: gstinNumber || '',
+        logo: typeof logo === 'string' ? logo.trim() : '',
       });
     } else {
       if (companyName !== undefined) billingInfo.companyName = String(companyName).trim();
@@ -578,6 +579,7 @@ router.patch('/billing-info', requireAuth, requireAdmin, async (req, res) => {
       if (contactNumber !== undefined) billingInfo.contactNumber = String(contactNumber).trim();
       if (email !== undefined) billingInfo.email = String(email).trim();
       if (gstinNumber !== undefined) billingInfo.gstinNumber = String(gstinNumber).trim();
+      if (logo !== undefined && typeof logo === 'string') billingInfo.logo = logo.trim();
       await billingInfo.save();
     }
 
