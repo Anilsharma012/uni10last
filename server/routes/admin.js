@@ -525,7 +525,7 @@ router.get('/billing-info', async (req, res) => {
 // POST /api/admin/billing-info - Create or update company billing info
 router.post('/billing-info', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const { companyName, address, contactNumber, email, gstinNumber } = req.body || {};
+    const { companyName, address, contactNumber, email, gstinNumber, logo } = req.body || {};
 
     if (!companyName || !address || !contactNumber || !email || !gstinNumber) {
       return res.status(400).json({ ok: false, message: 'All fields are required' });
@@ -539,6 +539,7 @@ router.post('/billing-info', requireAuth, requireAdmin, async (req, res) => {
         contactNumber: String(contactNumber).trim(),
         email: String(email).trim(),
         gstinNumber: String(gstinNumber).trim(),
+        logo: typeof logo === 'string' ? logo.trim() : '',
       });
     } else {
       billingInfo.companyName = String(companyName).trim();
@@ -546,6 +547,7 @@ router.post('/billing-info', requireAuth, requireAdmin, async (req, res) => {
       billingInfo.contactNumber = String(contactNumber).trim();
       billingInfo.email = String(email).trim();
       billingInfo.gstinNumber = String(gstinNumber).trim();
+      if (typeof logo === 'string') billingInfo.logo = logo.trim();
       await billingInfo.save();
     }
 
