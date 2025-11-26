@@ -394,9 +394,14 @@ type ProductFormState = {
     diagramUrl: string;
   };
   colors: string[];
+  colorInventory: Array<{ color: string; qty: number }>;
   highlights: string[];
   longDescription: string;
   specs: Array<{ key: string; value: string }>;
+  discount: {
+    type: 'flat' | 'percentage';
+    value: number;
+  };
 };
 
 const EMPTY_FORM: ProductFormState = {
