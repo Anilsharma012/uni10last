@@ -735,9 +735,14 @@ const CheckoutPayment = () => {
                   <Input
                     id="phone"
                     type="tel"
+                    inputMode="numeric"
                     placeholder="10-digit mobile number"
+                    maxLength={10}
                     value={customerDetails.phone}
-                    onChange={(e) => setCustomerDetails({ ...customerDetails, phone: e.target.value })}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                      setCustomerDetails({ ...customerDetails, phone: value });
+                    }}
                   />
                 </div>
                 <div className="md:col-span-2">
