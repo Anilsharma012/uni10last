@@ -465,8 +465,8 @@ router.put('/:id/admin-update', requireAuth, requireAdmin, async (req, res) => {
       }
     }
 
-    // Send email on return approval
-    if (returnStatus === 'Approved' && order.returnStatus === 'Approved' && order.userId && order.userId.email) {
+    // Send email on return completion
+    if ((returnStatus === 'Completed' || returnStatus === 'Processing') && order.userId && order.userId.email) {
       const user = order.userId;
       await sendReturnApprovalEmail(order, user);
     }
