@@ -137,7 +137,7 @@ export default function AdminReturns() {
                   <th className="py-2">User Name & Email</th>
                   <th className="py-2">Product Details</th>
                   <th className="py-2">Return Reason</th>
-                  <th className="py-2">UPI ID</th>
+                  <th className="py-2">Refund Details</th>
                   <th className="py-2">Date</th>
                   <th className="py-2">Status</th>
                   <th className="py-2">Actions</th>
