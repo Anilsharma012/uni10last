@@ -85,6 +85,7 @@ const NAV_ITEMS = [
 export default function SupportCenter() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Protect route - admin only
   useEffect(() => {
