@@ -93,9 +93,12 @@ export default function AdminReturns() {
 
   const openEmail = (row: ReturnOrder) => {
     const to = (row.userId && typeof row.userId === 'object') ? (row.userId.email || '') : '';
+    const refundText = row.refundMethod === 'bank' && row.refundBankDetails
+      ? `Bank Account: ${row.refundBankDetails.accountHolderName}, ${row.refundBankDetails.bankName}, A/C: ${row.refundBankDetails.accountNumber}, IFSC: ${row.refundBankDetails.ifscCode}`
+      : `UPI: ${row.refundUpiId || '-'}`;
     setEmailTo(to);
     setEmailSubject('Refund processed for order #' + row._id.slice(0,8).toUpperCase());
-    setEmailHtml(`<p>Hello ${(row.userId as any)?.name || ''},</p><p>Your refund for order #${row._id.slice(0,8).toUpperCase()} has been processed to UPI <b>${row.refundUpiId || '-'}</b>.</p>`);
+    setEmailHtml(`<p>Hello ${(row.userId as any)?.name || ''},</p><p>Your refund for order #${row._id.slice(0,8).toUpperCase()} has been processed to ${refundText}.</p>`);
     setEmailOpen(true);
   };
 
