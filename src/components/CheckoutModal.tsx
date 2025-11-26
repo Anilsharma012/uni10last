@@ -173,6 +173,18 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
     toast({ title: "Coupon removed" });
   };
 
+  const handleAddressSelect = (address: AddressType) => {
+    setSelectedAddress(address);
+    setName(address.name);
+    setPhone(address.phone);
+    setStreetAddress(address.houseNumber);
+    setAddress(address.area);
+    setCity(address.city);
+    setStateName(address.state);
+    setPincode(address.pincode);
+    setLandmark(address.landmark || "");
+  };
+
   async function handleRazorpayPayment() {
     try {
       // validations (landmark optional rakha hai)
