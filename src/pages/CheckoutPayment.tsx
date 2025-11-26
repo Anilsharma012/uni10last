@@ -10,6 +10,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
 import { api } from '@/lib/api';
+import { AddressSelector, Address as AddressType } from '@/components/AddressSelector';
 
 type PaymentSettings = {
   upiQrImage: string;
