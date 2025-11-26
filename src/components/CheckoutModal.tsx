@@ -196,6 +196,14 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
         });
         return;
       }
+      if (!/^\d{10}$/.test(phone)) {
+        toast({
+          title: "Invalid phone number",
+          description: "Phone number must be exactly 10 digits.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       // Save address to user profile
       await saveAddressIfNeeded();
