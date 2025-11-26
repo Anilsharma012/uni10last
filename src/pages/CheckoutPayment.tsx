@@ -235,6 +235,9 @@ const CheckoutPayment = () => {
     if (!validateCustomerDetails()) return;
 
     try {
+      // Save address to user profile
+      await saveAddressIfNeeded();
+
       setSubmitting(true);
 
       const totalWithShipping = total + shippingCharges;
