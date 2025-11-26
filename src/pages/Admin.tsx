@@ -966,6 +966,7 @@ const Admin = () => {
           contactNumber: String(data.contactNumber || ''),
           email: String(data.email || ''),
           gstinNumber: String(data.gstinNumber || ''),
+          logo: String(data.logo || ''),
         });
       } else {
         setBillingForm({
@@ -974,6 +975,7 @@ const Admin = () => {
           contactNumber: '',
           email: '',
           gstinNumber: '',
+          logo: '',
         });
       }
     } catch (e:any) {
@@ -984,6 +986,7 @@ const Admin = () => {
         contactNumber: '',
         email: '',
         gstinNumber: '',
+        logo: '',
       });
     } finally {
       setBillingLoading(false);
