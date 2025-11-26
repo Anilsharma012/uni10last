@@ -321,6 +321,36 @@ router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
+// Get related products by category and price range
+router.get('/:id/related', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const limit = Math.min(Number(req.query.limit || 8), 20);
+
+    const product = await Product.findById(id).lean();
+    if (!product) return res.status(404).json({ ok: false, message: 'Product not found' });
+
+    const filter = {
+      active: true,
+      _id: { $ne: id },
+      category: product.category,
+    };
+
+    const basePrice = Number(product.price || 0);
+    const priceRange = basePrice * 0.5;
+    filter.price = {
+      $gte: Math.max(0, basePrice - priceRange),
+      $lte: basePrice + priceRange,
+    };
+
+    const related = await Product.find(filter).limit(limit).lean();
+    return res.json({ ok: true, data: related });
+  } catch (e) {
+    console.error(e);
+    return res.status(500).json({ ok: false, message: 'Server error' });
+  }
+});
+
 // Soft delete
 router.delete('/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
