@@ -302,6 +302,10 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
       toast({ title: "Missing Details", description: "Please fill all delivery details including street address", variant: "destructive" });
       return;
     }
+    if (!/^\d{10}$/.test(phone)) {
+      toast({ title: "Invalid phone number", description: "Phone number must be exactly 10 digits.", variant: "destructive" });
+      return;
+    }
     try {
       // Save address to user profile
       await saveAddressIfNeeded();
