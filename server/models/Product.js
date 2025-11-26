@@ -76,7 +76,7 @@ const ProductSchema = new mongoose.Schema(
         type: { type: String, enum: ['flat', 'percentage'] },
         value: { type: Number, default: 0 },
       },
-      default: { type: 'flat', value: 0 },
+      default: () => ({ type: 'flat', value: 0 }),
     },
 
     active: { type: Boolean, default: true },
