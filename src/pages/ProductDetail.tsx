@@ -480,9 +480,29 @@ const ProductDetail = () => {
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tighter mb-2 sm:mb-4">
               {title}
             </h1>
-            <p className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 sm:mb-6">
-              ₹{Number(product.price || 0).toLocaleString("en-IN")}
-            </p>
+            <div className="flex items-baseline gap-3 mb-4 sm:mb-6">
+              <p className="text-xl sm:text-2xl md:text-3xl font-bold">
+                ₹{(() => {
+                  const basePrice = Number(product.price || 0);
+                  if (product?.discount?.value && product.discount.type === 'percentage') {
+                    return (basePrice - (basePrice * product.discount.value / 100)).toLocaleString("en-IN");
+                  } else if (product?.discount?.value && product.discount.type === 'flat') {
+                    return Math.max(0, basePrice - product.discount.value).toLocaleString("en-IN");
+                  }
+                  return basePrice.toLocaleString("en-IN");
+                })()}
+              </p>
+              {product?.discount?.value && product.discount.value > 0 && (
+                <>
+                  <p className="text-sm sm:text-base text-muted-foreground line-through">
+                    ₹{Number(product.price || 0).toLocaleString("en-IN")}
+                  </p>
+                  <Badge className="bg-red-500 hover:bg-red-600">
+                    {product.discount.type === 'percentage' ? `${product.discount.value}% OFF` : `₹${product.discount.value} OFF`}
+                  </Badge>
+                </>
+              )}
+            </div>
             <div className="mb-3 sm:mb-4">
               <Badge
                 variant={outOfStock ? "destructive" : "secondary"}
