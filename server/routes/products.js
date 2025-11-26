@@ -290,11 +290,22 @@ router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
         qty: Number(s.qty || 0)
       })).filter(s => s.code);
     }
+    if (Array.isArray(body.colorInventory)) {
+      updates.colorInventory = body.colorInventory.map(c => ({
+        color: String(c.color || '').trim(),
+        qty: Number(c.qty || 0)
+      })).filter(c => c.color);
+    }
+    if (body.discount !== undefined && typeof body.discount === 'object') {
+      updates.discount = {
+        type: body.discount.type === 'percentage' ? 'percentage' : 'flat',
+        value: Number(body.discount.value || 0)
+      };
+    }
     if (typeof body.sizeChartUrl !== 'undefined') updates.sizeChartUrl = body.sizeChartUrl || undefined;
     if (typeof body.sizeChartTitle !== 'undefined') updates.sizeChartTitle = body.sizeChartTitle || undefined;
     if (body.sizeChart !== undefined) updates.sizeChart = body.sizeChart || undefined;
 
-    // ✅ PATCH me bhi colors support
     if (Array.isArray(body.colors)) {
       updates.colors = body.colors;
     } else if (typeof body.color !== 'undefined') {
