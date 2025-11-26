@@ -2512,6 +2512,7 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                           setProductForm((p) => ({
                             ...p,
                             colors: [...p.colors, colorInput],
+                            colorInventory: [...p.colorInventory, { color: colorInput, qty: 0 }],
                           }));
                           (e.target as HTMLInputElement).value = '';
                         }
@@ -2529,6 +2530,7 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                         setProductForm((p) => ({
                           ...p,
                           colors: [...p.colors, colorInput],
+                          colorInventory: [...p.colorInventory, { color: colorInput, qty: 0 }],
                         }));
                         input.value = '';
                       }
@@ -2554,6 +2556,7 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                             setProductForm((p) => ({
                               ...p,
                               colors: p.colors.filter((c) => c !== color),
+                              colorInventory: p.colorInventory.filter((ci) => ci.color !== color),
                             }));
                           }}
                         >
@@ -2566,6 +2569,93 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                 <p className="text-xs text-muted-foreground mt-2">
                   {productForm.colors.length === 0 ? 'Add color options by typing and clicking Add or pressing Enter.' : `${productForm.colors.length} color(s) added`}
                 </p>
+              </div>
+
+              {productForm.colors.length > 0 && (
+                <div>
+                  <Label className="block mb-3">Color-wise Stock</Label>
+                  <div className="space-y-2">
+                    {productForm.colors.map((color) => {
+                      const colorInv = productForm.colorInventory.find((ci) => ci.color === color);
+                      return (
+                        <div key={color} className="flex items-center gap-2">
+                          <span className="w-24 text-sm">{color}</span>
+                          <Input
+                            type="number"
+                            min="0"
+                            value={colorInv?.qty ?? 0}
+                            onChange={(e) => {
+                              const qty = Number(e.target.value) || 0;
+                              setProductForm((p) => {
+                                const newColorInv = [...p.colorInventory];
+                                const idx = newColorInv.findIndex((ci) => ci.color === color);
+                                if (idx !== -1) {
+                                  newColorInv[idx].qty = qty;
+                                } else {
+                                  newColorInv.push({ color, qty });
+                                }
+                                return { ...p, colorInventory: newColorInv };
+                              });
+                            }}
+                            placeholder="0"
+                            className="w-24"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Set stock quantity for each color. Products show "Out of Stock" when quantity is 0.
+                  </p>
+                </div>
+              )}
+
+              <div className="border-t border-border pt-4">
+                <h3 className="text-sm font-semibold mb-4">Discount</h3>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <Label htmlFor="discountType">Type</Label>
+                    <Select
+                      value={productForm.discount.type}
+                      onValueChange={(val) => setProductForm((p) => ({ ...p, discount: { ...p.discount, type: val as 'flat' | 'percentage' } }))}
+                    >
+                      <SelectTrigger id="discountType">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="flat">Flat (₹)</SelectItem>
+                        <SelectItem value="percentage">Percentage (%)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="discountValue">Value</Label>
+                    <Input
+                      id="discountValue"
+                      type="number"
+                      min="0"
+                      step={productForm.discount.type === 'percentage' ? '0.1' : '1'}
+                      value={productForm.discount.value}
+                      onChange={(e) => setProductForm((p) => ({ ...p, discount: { ...p.discount, value: Number(e.target.value) || 0 } }))}
+                      placeholder="0"
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <div className="text-sm p-2 bg-muted rounded">
+                      {productForm.discount.value > 0 && (
+                        <>
+                          <span className="text-xs text-muted-foreground">Final Price: </span>
+                          <span className="font-semibold">
+                            ₹{Math.max(0, productForm.discount.type === 'percentage'
+                              ? Math.round(productForm.price * (1 - productForm.discount.value / 100))
+                              : productForm.price - productForm.discount.value
+                            )}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="border-t border-border pt-4">
