@@ -486,6 +486,14 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
           <DialogDescription>Complete your purchase</DialogDescription>
         </DialogHeader>
 
+        {/* Address Selector */}
+        <div className="border-b border-border pb-4 mt-4">
+          <AddressSelector
+            onAddressSelect={handleAddressSelect}
+            selectedAddressId={selectedAddress?._id}
+          />
+        </div>
+
         {/* User Details */}
         <div className="space-y-3 mt-4">
           <input
