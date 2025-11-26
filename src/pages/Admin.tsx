@@ -586,6 +586,7 @@ const Admin = () => {
   // Billing info state
   const [billingForm, setBillingForm] = useState<BillingInfoForm>({
     companyName: 'UNI10',
+    logo: '',
     address: '',
     contactNumber: '',
     email: '',
