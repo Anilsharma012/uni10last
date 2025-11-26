@@ -540,8 +540,14 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
           />
           <input
             placeholder="Phone"
+            type="tel"
+            inputMode="numeric"
+            maxLength={10}
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+              setPhone(value);
+            }}
             className={fieldBase}
           />
           <textarea
