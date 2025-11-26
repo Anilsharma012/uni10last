@@ -1414,6 +1414,121 @@ const Admin = () => {
     }
   };
 
+  const uploadLogo = async (file: File) => {
+    if (!file) return;
+    setUploadingLogo(true);
+
+    const isLocalhost = (url: string) => {
+      try {
+        return url.includes('localhost') || url.includes('127.0.0.1');
+      } catch {
+        return false;
+      }
+    };
+
+    const normalizeForUi = (u: string) => {
+      const s = String(u || '');
+      if (!s) return '';
+      if (s.startsWith('http')) {
+        try { const parsed = new URL(s); if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') return `/api${parsed.pathname}`; } catch {}
+        return s;
+      }
+      if (s.startsWith('/api/uploads')) return s;
+      if (s.startsWith('/uploads')) return `/api${s}`;
+      if (s.startsWith('uploads')) return `/api/${s}`;
+      return s;
+    };
+
+    const tryUpload = async (uploadUrl: string) => {
+      const fd = new FormData();
+      fd.append('file', file);
+      try {
+        const token = (typeof window !== 'undefined') ? localStorage.getItem('token') : null;
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await fetch(uploadUrl, {
+          method: 'POST',
+          credentials: 'include',
+          headers,
+          body: fd,
+        });
+        let json: any = null;
+        try { json = await res.json(); } catch {}
+        if (!res.ok) throw new Error(json?.message || json?.error || `${res.status} ${res.statusText}`);
+        return json;
+      } catch (err: any) {
+        throw new Error(err?.message || String(err));
+      }
+    };
+
+    try {
+      const base = API_BASE || '';
+      const baseNormalized = base.endsWith('/') ? base.slice(0, -1) : base;
+      const primaryUrl = base ? `${baseNormalized}/api/uploads` : '';
+
+      if (base && isLocalhost(base) && !location.hostname.includes('localhost') && !location.hostname.includes('127.0.0.1')) {
+        try {
+          const relJson = await tryUpload('/api/uploads');
+          const url = relJson?.url || relJson?.data?.url;
+          const full = normalizeForUi(url);
+          setBillingForm((p) => ({ ...p, logo: full }));
+          toast.success('Logo uploaded successfully');
+          return;
+        } catch (relErr) {
+          console.warn('Relative upload failed, falling back to API_BASE upload:', relErr?.message || relErr);
+        }
+      }
+
+      if (primaryUrl) {
+        try {
+          const json = await tryUpload(primaryUrl);
+          const url = json?.url || json?.data?.url;
+          if (url) {
+            const full = normalizeForUi(url);
+            setBillingForm((p) => ({ ...p, logo: full }));
+            toast.success('Logo uploaded successfully');
+            return;
+          }
+        } catch (primaryErr: any) {
+          console.warn('Primary upload failed:', primaryErr?.message || primaryErr);
+
+          try {
+            if (primaryUrl.startsWith('http:') && location.protocol === 'https:') {
+              const httpsUrl = primaryUrl.replace(/^http:/, 'https:');
+              const json2 = await tryUpload(httpsUrl);
+              const url2 = json2?.url || json2?.data?.url;
+              if (url2) {
+                const full = normalizeForUi(url2);
+                setBillingForm((p) => ({ ...p, logo: full }));
+                toast.success('Logo uploaded successfully');
+                return;
+              }
+            }
+          } catch (httpsErr: any) {
+            console.warn('HTTPS fallback failed:', httpsErr?.message || httpsErr);
+          }
+        }
+      }
+
+      try {
+        const relJson2 = await tryUpload('/api/uploads');
+        const url = relJson2?.url || relJson2?.data?.url;
+        const full = normalizeForUi(url);
+        setBillingForm((p) => ({ ...p, logo: full }));
+        toast.success('Logo uploaded successfully');
+        return;
+      } catch (relErr2: any) {
+        console.warn('Final upload attempt failed:', relErr2?.message || relErr2);
+        throw new Error('Failed to upload logo. Please try again.');
+      }
+    } catch (err: any) {
+      toast.error(err?.message || 'Logo upload failed');
+      console.warn('uploadLogo error:', err);
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
 const handleProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
