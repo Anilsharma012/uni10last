@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
@@ -83,13 +82,13 @@ export function ReturnProductForm({ orderId, onSuccess, onCancel }: ReturnProduc
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Return Product</CardTitle>
-        <CardDescription>Submit a return request and provide refund details</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="w-full space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold">Return Product</h3>
+        <p className="text-sm text-muted-foreground mt-1">Submit a return request and provide refund details</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
           {/* Return Reason */}
           <div className="space-y-2">
             <Label htmlFor="reason">Reason for Return *</Label>
@@ -186,17 +185,16 @@ export function ReturnProductForm({ orderId, onSuccess, onCancel }: ReturnProduc
             </Tabs>
           </div>
 
-          {/* Actions */}
-          <div className="flex gap-2 justify-end pt-4 border-t">
-            <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Submitting...' : 'Submit Return Request'}
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
+        {/* Actions */}
+        <div className="flex gap-2 justify-end pt-4 border-t">
+          <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? 'Submitting...' : 'Submit Return Request'}
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 }
