@@ -80,6 +80,7 @@ export default function AccountShipments() {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState<Shipment | null>(null);
+  const [returnDialogOpen, setReturnDialogOpen] = useState(false);
 
   useEffect(() => {
     if (loading) return;
