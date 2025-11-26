@@ -63,6 +63,11 @@ const Auth = () => {
           setLoading(false);
           return;
         }
+        if (phone && !/^\d{10}$/.test(phone)) {
+          toast.error('Phone number must be exactly 10 digits');
+          setLoading(false);
+          return;
+        }
         const { error } = await signUp(email, password, name, phone);
         if (error) throw new Error(error?.message ?? JSON.stringify(error));
         toast.success('Account created successfully!');
