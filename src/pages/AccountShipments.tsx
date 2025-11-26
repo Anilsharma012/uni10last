@@ -291,6 +291,19 @@ export default function AccountShipments() {
                     )}
                   </div>
                 </div>
+
+                {active.status && (active.status.toLowerCase() === 'delivered' || active.status.toLowerCase() === 'return_initiated') && (
+                  <div className="mt-4 pt-4 border-t">
+                    <Button
+                      className="w-full"
+                      variant="destructive"
+                      onClick={() => setReturnDialogOpen(true)}
+                      disabled={active.status.toLowerCase() === 'return_initiated'}
+                    >
+                      {active.status.toLowerCase() === 'return_initiated' ? 'Return Already Initiated' : 'Initiate Return'}
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </div>
