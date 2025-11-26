@@ -522,17 +522,32 @@ const ProductDetail = () => {
     );
   }
 
-  if (!product)
+  if (!product) {
+    document.title = "Product Not Found | uni10";
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Product not found</h1>
-          <Link to="/shop">
-            <Button>Back to Shop</Button>
-          </Link>
-        </div>
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="container mx-auto px-3 sm:px-4 pt-24 pb-12 flex items-center justify-center">
+          <div className="text-center py-12">
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tighter mb-3">
+              Product Not Found
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground mb-8 max-w-md mx-auto">
+              The product you're looking for doesn't exist or may have been removed.
+              Please check the URL or browse our collection.
+            </p>
+            <Link to="/shop">
+              <Button size="lg">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Shop
+              </Button>
+            </Link>
+          </div>
+        </main>
+        <Footer />
       </div>
     );
+  }
 
   return (
     <div className="min-h-screen bg-background">
