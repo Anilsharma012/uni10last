@@ -110,22 +110,66 @@ const MyOrders = () => {
       toast.error('Please provide a reason for return');
       return;
     }
-    if (!upiId.trim()) {
-      toast.error('Please enter a UPI ID for refund');
-      return;
+
+    if (refundMethod === 'upi') {
+      if (!upiId.trim()) {
+        toast.error('Please enter a UPI ID for refund');
+        return;
+      }
+    } else if (refundMethod === 'bank') {
+      if (!bankDetails.accountHolderName.trim()) {
+        toast.error('Please enter account holder name');
+        return;
+      }
+      if (!bankDetails.bankName.trim()) {
+        toast.error('Please enter bank name');
+        return;
+      }
+      if (!bankDetails.accountNumber.trim()) {
+        toast.error('Please enter account number');
+        return;
+      }
+      if (!bankDetails.ifscCode.trim()) {
+        toast.error('Please enter IFSC code');
+        return;
+      }
     }
 
     try {
       setSubmitting(true);
+      const body: any = {
+        reason: returnReason.trim(),
+        refundMethod,
+        photoUrl: photoUrl || undefined,
+      };
+
+      if (refundMethod === 'upi') {
+        body.refundUpiId = upiId.trim();
+      } else {
+        body.refundBankDetails = {
+          accountHolderName: bankDetails.accountHolderName.trim(),
+          bankName: bankDetails.bankName.trim(),
+          accountNumber: bankDetails.accountNumber.trim(),
+          ifscCode: bankDetails.ifscCode.trim(),
+        };
+      }
+
       const { ok, json } = await api(`/api/orders/${selectedOrderId}/request-return`, {
         method: 'POST',
-        body: JSON.stringify({ reason: returnReason.trim(), upiId: upiId.trim(), photoUrl: photoUrl || undefined }),
+        body: JSON.stringify(body),
       });
 
       if (ok) {
         toast.success('Return request submitted successfully!');
         setReturnReason('');
+        setRefundMethod('upi');
         setUpiId('');
+        setBankDetails({
+          accountHolderName: '',
+          bankName: '',
+          accountNumber: '',
+          ifscCode: '',
+        });
         setPhotoUrl('');
         setReturnDialogOpen(false);
         setSelectedOrderId(null);
@@ -133,7 +177,15 @@ const MyOrders = () => {
         setOrders((prev) =>
           prev.map((order) =>
             order._id === selectedOrderId
-              ? { ...order, returnStatus: 'Pending', returnReason: returnReason.trim(), refundUpiId: upiId.trim(), returnRequestedAt: new Date().toISOString(), returnPhoto: photoUrl }
+              ? {
+                  ...order,
+                  returnStatus: 'Pending',
+                  returnReason: returnReason.trim(),
+                  refundUpiId: refundMethod === 'upi' ? upiId.trim() : undefined,
+                  refundBankDetails: refundMethod === 'bank' ? bankDetails : undefined,
+                  returnRequestedAt: new Date().toISOString(),
+                  returnPhoto: photoUrl,
+                }
               : order
           )
         );
