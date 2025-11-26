@@ -353,9 +353,38 @@ const CheckoutPayment = () => {
     }
   };
 
+  const saveAddressIfNeeded = async () => {
+    // If address is already selected from saved addresses, no need to save
+    if (selectedAddress) {
+      return;
+    }
+
+    try {
+      await api('/api/auth/addresses', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: customerDetails.name.trim(),
+          phone: customerDetails.phone.trim(),
+          houseNumber: customerDetails.streetAddress.trim(),
+          area: customerDetails.address.trim(),
+          city: customerDetails.city.trim(),
+          state: customerDetails.state.trim(),
+          pincode: customerDetails.pincode.trim(),
+          landmark: customerDetails.landmark.trim(),
+        }),
+      });
+    } catch (error) {
+      console.warn('Failed to save address:', error);
+      // Don't fail the order if address save fails
+    }
+  };
+
   const handleRazorpayPayment = async () => {
     try {
       if (!validateCustomerDetails()) return;
+
+      // Save address to user profile
+      await saveAddressIfNeeded();
 
       setSubmitting(true);
 
