@@ -1461,9 +1461,14 @@ const handleProductSubmit = async (e: React.FormEvent) => {
         colors: Array.isArray(productForm.colors)
           ? productForm.colors.filter((c) => c.trim())
           : [],
+        colorInventory: Array.isArray(productForm.colorInventory) ? productForm.colorInventory.filter(c => c.color.trim() && c.qty > 0) : [],
         highlights: Array.isArray(productForm.highlights) ? productForm.highlights.filter(h => h.trim()) : [],
         longDescription: productForm.longDescription.trim(),
         specs: Array.isArray(productForm.specs) ? productForm.specs.filter(s => s.key.trim() && s.value.trim()) : [],
+        discount: productForm.discount && productForm.discount.value > 0 ? {
+          type: productForm.discount.type,
+          value: productForm.discount.value,
+        } : undefined,
       };
 
       if (editingProduct) {
