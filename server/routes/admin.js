@@ -502,8 +502,8 @@ router.delete('/pages/:id', requireAuth, requireAdmin, async (req, res) => {
 // Billing Info endpoints
 const BillingInfo = require('../models/BillingInfo');
 
-// GET /api/admin/billing-info - Get company billing info
-router.get('/billing-info', async (req, res) => {
+// GET /api/admin/billing-info - Get company billing info (admin only)
+router.get('/billing-info', requireAuth, requireAdmin, async (req, res) => {
   try {
     let billingInfo = await BillingInfo.findOne();
     if (!billingInfo) {
@@ -513,11 +513,55 @@ router.get('/billing-info', async (req, res) => {
         contactNumber: '',
         email: '',
         gstinNumber: '',
+        logo: '',
       });
     }
-    return res.json({ ok: true, data: billingInfo });
+    // Return with both original and mapped field names for compatibility
+    const data = billingInfo.toObject ? billingInfo.toObject() : billingInfo;
+    return res.json({
+      ok: true,
+      data: {
+        ...data,
+        // Map to invoice-compatible field names
+        name: data.companyName || 'UNI10',
+        phone: data.contactNumber || '',
+        gstIn: data.gstinNumber || '',
+      }
+    });
   } catch (e) {
     console.error('Failed to fetch billing info:', e);
+    return res.status(500).json({ ok: false, message: 'Server error' });
+  }
+});
+
+// GET /api/billing-info/public - Get company billing info (public endpoint for invoices)
+router.get('/billing-info/public', async (req, res) => {
+  try {
+    let billingInfo = await BillingInfo.findOne();
+    if (!billingInfo) {
+      billingInfo = await BillingInfo.create({
+        companyName: 'UNI10',
+        address: '',
+        contactNumber: '',
+        email: '',
+        gstinNumber: '',
+        logo: '',
+      });
+    }
+    // Return with both original and mapped field names for compatibility
+    const data = billingInfo.toObject ? billingInfo.toObject() : billingInfo;
+    return res.json({
+      ok: true,
+      data: {
+        ...data,
+        // Map to invoice-compatible field names
+        name: data.companyName || 'UNI10',
+        phone: data.contactNumber || '',
+        gstIn: data.gstinNumber || '',
+      }
+    });
+  } catch (e) {
+    console.error('Failed to fetch public billing info:', e);
     return res.status(500).json({ ok: false, message: 'Server error' });
   }
 });
@@ -525,7 +569,7 @@ router.get('/billing-info', async (req, res) => {
 // POST /api/admin/billing-info - Create or update company billing info
 router.post('/billing-info', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const { companyName, address, contactNumber, email, gstinNumber } = req.body || {};
+    const { companyName, address, contactNumber, email, gstinNumber, logo } = req.body || {};
 
     if (!companyName || !address || !contactNumber || !email || !gstinNumber) {
       return res.status(400).json({ ok: false, message: 'All fields are required' });
@@ -539,6 +583,7 @@ router.post('/billing-info', requireAuth, requireAdmin, async (req, res) => {
         contactNumber: String(contactNumber).trim(),
         email: String(email).trim(),
         gstinNumber: String(gstinNumber).trim(),
+        logo: typeof logo === 'string' ? logo.trim() : '',
       });
     } else {
       billingInfo.companyName = String(companyName).trim();
@@ -546,6 +591,7 @@ router.post('/billing-info', requireAuth, requireAdmin, async (req, res) => {
       billingInfo.contactNumber = String(contactNumber).trim();
       billingInfo.email = String(email).trim();
       billingInfo.gstinNumber = String(gstinNumber).trim();
+      if (typeof logo === 'string') billingInfo.logo = logo.trim();
       await billingInfo.save();
     }
 
@@ -559,7 +605,7 @@ router.post('/billing-info', requireAuth, requireAdmin, async (req, res) => {
 // PATCH /api/admin/billing-info - Update company billing info
 router.patch('/billing-info', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const { companyName, address, contactNumber, email, gstinNumber } = req.body || {};
+    const { companyName, address, contactNumber, email, gstinNumber, logo } = req.body || {};
 
     let billingInfo = await BillingInfo.findOne();
     if (!billingInfo) {
@@ -569,6 +615,7 @@ router.patch('/billing-info', requireAuth, requireAdmin, async (req, res) => {
         contactNumber: contactNumber || '',
         email: email || '',
         gstinNumber: gstinNumber || '',
+        logo: typeof logo === 'string' ? logo.trim() : '',
       });
     } else {
       if (companyName !== undefined) billingInfo.companyName = String(companyName).trim();
@@ -576,6 +623,7 @@ router.patch('/billing-info', requireAuth, requireAdmin, async (req, res) => {
       if (contactNumber !== undefined) billingInfo.contactNumber = String(contactNumber).trim();
       if (email !== undefined) billingInfo.email = String(email).trim();
       if (gstinNumber !== undefined) billingInfo.gstinNumber = String(gstinNumber).trim();
+      if (logo !== undefined && typeof logo === 'string') billingInfo.logo = logo.trim();
       await billingInfo.save();
     }
 

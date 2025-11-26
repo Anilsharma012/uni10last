@@ -91,9 +91,7 @@ export function InvoiceDisplay({ order, invoice, businessInfo, isLoading, error 
         <div className="mb-8 pb-8 border-b border-border">
           <div className="flex justify-between items-start mb-6">
             <div>
-              {businessInfo.logo && (
-                <img src={businessInfo.logo} alt={businessInfo.name} className="h-16 mb-2 object-contain" />
-              )}
+              <img src={businessInfo.logo || '/uni10-logo.png'} alt={businessInfo.name} className="h-16 mb-2 object-contain" />
               <div>
                 <h1 className="text-3xl font-black tracking-tighter">{businessInfo.name}</h1>
                 <p className="text-sm text-muted-foreground mt-1">{businessInfo.address}</p>
