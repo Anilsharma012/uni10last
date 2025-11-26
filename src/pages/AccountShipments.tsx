@@ -247,9 +247,9 @@ export default function AccountShipments() {
       <Dialog open={returnDialogOpen} onOpenChange={setReturnDialogOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Return Request</DialogTitle>
+            <DialogTitle>Request Return</DialogTitle>
             <DialogDescription>
-              Order #{active?.orderId.slice(0, 8)}
+              Order #{active?.orderId.slice(0, 8)} • Provide return reason and refund details (UPI or Bank Transfer)
             </DialogDescription>
           </DialogHeader>
           {active && (
