@@ -141,6 +141,21 @@ const CheckoutPayment = () => {
     }
   };
 
+  const handleAddressSelect = (address: AddressType) => {
+    setSelectedAddress(address);
+    setCustomerDetails({
+      ...customerDetails,
+      name: address.name,
+      phone: address.phone,
+      streetAddress: address.houseNumber,
+      address: address.area,
+      city: address.city,
+      state: address.state,
+      pincode: address.pincode,
+      landmark: address.landmark || '',
+    });
+  };
+
   useEffect(() => {
     fetchPaymentSettings();
     fetchRazorpaySettings();
