@@ -7,6 +7,7 @@ const BillingInfoSchema = new mongoose.Schema(
     contactNumber: { type: String, required: true, default: '' },
     email: { type: String, required: true, default: '' },
     gstinNumber: { type: String, required: true, default: '' },
+    logo: { type: String, default: '' },
   },
   { timestamps: true }
 );
