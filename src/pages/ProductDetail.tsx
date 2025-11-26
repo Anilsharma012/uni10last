@@ -155,6 +155,87 @@ const ProductDetail = () => {
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }, [id]);
 
+  // ✅ Dynamic meta tags for social sharing (SEO + shareable URLs)
+  useEffect(() => {
+    if (!product) {
+      document.title = "uni10 - Premium Streetwear & Lifestyle";
+      return;
+    }
+
+    const productTitle = product.title || product.name || "Product";
+    const productPrice = Number(product.price || 0);
+    const priceStr = productPrice.toLocaleString("en-IN");
+    const pageTitle = `${productTitle} - ₹${priceStr} | uni10`;
+    const description = product.description || `Shop ${productTitle} at uni10. Premium streetwear and lifestyle products.`;
+    const imageUrl = resolveImage(product.image_url || (product.images?.[0] || ""));
+
+    // Update page title
+    document.title = pageTitle;
+
+    // Update or create meta description
+    let descriptionMeta = document.querySelector('meta[name="description"]');
+    if (!descriptionMeta) {
+      descriptionMeta = document.createElement("meta");
+      descriptionMeta.setAttribute("name", "description");
+      document.head.appendChild(descriptionMeta);
+    }
+    descriptionMeta.setAttribute("content", description);
+
+    // Update or create OG title
+    let ogTitle = document.querySelector('meta[property="og:title"]');
+    if (!ogTitle) {
+      ogTitle = document.createElement("meta");
+      ogTitle.setAttribute("property", "og:title");
+      document.head.appendChild(ogTitle);
+    }
+    ogTitle.setAttribute("content", pageTitle);
+
+    // Update or create OG description
+    let ogDesc = document.querySelector('meta[property="og:description"]');
+    if (!ogDesc) {
+      ogDesc = document.createElement("meta");
+      ogDesc.setAttribute("property", "og:description");
+      document.head.appendChild(ogDesc);
+    }
+    ogDesc.setAttribute("content", description);
+
+    // Update or create OG image
+    let ogImage = document.querySelector('meta[property="og:image"]');
+    if (!ogImage) {
+      ogImage = document.createElement("meta");
+      ogImage.setAttribute("property", "og:image");
+      document.head.appendChild(ogImage);
+    }
+    ogImage.setAttribute("content", imageUrl);
+
+    // Update or create OG type
+    let ogType = document.querySelector('meta[property="og:type"]');
+    if (!ogType) {
+      ogType = document.createElement("meta");
+      ogType.setAttribute("property", "og:type");
+      document.head.appendChild(ogType);
+    }
+    ogType.setAttribute("content", "product");
+
+    // Update or create OG URL
+    let ogUrl = document.querySelector('meta[property="og:url"]');
+    if (!ogUrl) {
+      ogUrl = document.createElement("meta");
+      ogUrl.setAttribute("property", "og:url");
+      document.head.appendChild(ogUrl);
+    }
+    ogUrl.setAttribute("content", window.location.href);
+
+    // Update Twitter card image
+    let twitterImage = document.querySelector('meta[name="twitter:image"]');
+    if (!twitterImage) {
+      twitterImage = document.createElement("meta");
+      twitterImage.setAttribute("name", "twitter:image");
+      document.head.appendChild(twitterImage);
+    }
+    twitterImage.setAttribute("content", imageUrl);
+  }, [product]);
+
   // ✅ Verified buyer check (runs AFTER product shown – does not block UI)
   useEffect(() => {
     const checkVerifiedBuyer = async () => {
