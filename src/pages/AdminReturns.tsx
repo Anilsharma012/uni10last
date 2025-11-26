@@ -174,7 +174,18 @@ export default function AdminReturns() {
                         <td className="py-2 max-w-[240px] pr-4">
                           <div className="line-clamp-2">{row.returnReason || '-'}</div>
                         </td>
-                        <td className="py-2">{row.refundUpiId || '-'}</td>
+                        <td className="py-2 max-w-[300px]">
+                          {row.refundMethod === 'bank' && row.refundBankDetails ? (
+                            <div className="text-xs space-y-1">
+                              <div><span className="font-semibold">Name:</span> {row.refundBankDetails.accountHolderName}</div>
+                              <div><span className="font-semibold">Bank:</span> {row.refundBankDetails.bankName}</div>
+                              <div><span className="font-semibold">A/C:</span> {row.refundBankDetails.accountNumber}</div>
+                              <div><span className="font-semibold">IFSC:</span> {row.refundBankDetails.ifscCode}</div>
+                            </div>
+                          ) : (
+                            <div className="text-sm">UPI: <span className="font-mono">{row.refundUpiId || '-'}</span></div>
+                          )}
+                        </td>
                         <td className="py-2">{new Date(d as any).toLocaleString()}</td>
                         <td className="py-2">
                           <Select value={row.returnStatus || 'Pending'} onValueChange={(v:any)=>updateStatus(row._id, v)}>
