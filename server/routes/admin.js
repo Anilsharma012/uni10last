@@ -502,8 +502,8 @@ router.delete('/pages/:id', requireAuth, requireAdmin, async (req, res) => {
 // Billing Info endpoints
 const BillingInfo = require('../models/BillingInfo');
 
-// GET /api/admin/billing-info - Get company billing info
-router.get('/billing-info', async (req, res) => {
+// GET /api/admin/billing-info - Get company billing info (admin only)
+router.get('/billing-info', requireAuth, requireAdmin, async (req, res) => {
   try {
     let billingInfo = await BillingInfo.findOne();
     if (!billingInfo) {
@@ -530,6 +530,38 @@ router.get('/billing-info', async (req, res) => {
     });
   } catch (e) {
     console.error('Failed to fetch billing info:', e);
+    return res.status(500).json({ ok: false, message: 'Server error' });
+  }
+});
+
+// GET /api/billing-info/public - Get company billing info (public endpoint for invoices)
+router.get('/billing-info/public', async (req, res) => {
+  try {
+    let billingInfo = await BillingInfo.findOne();
+    if (!billingInfo) {
+      billingInfo = await BillingInfo.create({
+        companyName: 'UNI10',
+        address: '',
+        contactNumber: '',
+        email: '',
+        gstinNumber: '',
+        logo: '',
+      });
+    }
+    // Return with both original and mapped field names for compatibility
+    const data = billingInfo.toObject ? billingInfo.toObject() : billingInfo;
+    return res.json({
+      ok: true,
+      data: {
+        ...data,
+        // Map to invoice-compatible field names
+        name: data.companyName || 'UNI10',
+        phone: data.contactNumber || '',
+        gstIn: data.gstinNumber || '',
+      }
+    });
+  } catch (e) {
+    console.error('Failed to fetch public billing info:', e);
     return res.status(500).json({ ok: false, message: 'Server error' });
   }
 });
