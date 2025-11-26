@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+import { LayoutDashboard, Package, Receipt, Users2, CreditCard, Truck, Tags, MessageCircle, Megaphone, Star, Percent, Menu } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ReturnOrderItem { title?: string; qty?: number; price?: number; image?: string }
 interface ReturnOrder {
