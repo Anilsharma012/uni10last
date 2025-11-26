@@ -46,6 +46,12 @@ interface Order {
   returnReason?: string;
   returnStatus?: string;
   refundUpiId?: string;
+  refundBankDetails?: {
+    accountHolderName: string;
+    bankName: string;
+    accountNumber: string;
+    ifscCode: string;
+  };
   returnRequestedAt?: string;
   returnPhoto?: string;
 }
