@@ -37,6 +37,26 @@ interface ReturnOrder {
   returnRequestedAt?: string;
 }
 
+const NAV_ITEMS = [
+  { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+  { id: 'products', label: 'Products', icon: Package },
+  { id: 'categories', label: 'Categories', icon: Tags },
+  { id: 'coupons', label: 'Coupon Management', icon: Percent },
+  { id: 'pages', label: 'Pages', icon: LayoutDashboard },
+  { id: 'orders', label: 'Orders', icon: Receipt },
+  { id: 'returns', label: 'Return Requests', icon: Receipt },
+  { id: 'users', label: 'Users', icon: Users2 },
+  { id: 'reviews', label: 'User Reviews', icon: Star },
+  { id: 'notifications', label: 'Notifications', icon: Megaphone },
+  { id: 'home', label: 'Home Ticker & New Arrivals', icon: LayoutDashboard },
+  { id: 'support', label: 'Support Center', icon: MessageCircle },
+  { id: 'contact', label: 'Contact Settings', icon: MessageCircle },
+  { id: 'billing', label: 'Company Billing Details', icon: CreditCard },
+  { id: 'payment', label: 'Payment Settings', icon: CreditCard },
+  { id: 'razorpaySettings', label: 'Razorpay Settings', icon: CreditCard },
+  { id: 'shiprocket', label: 'Shiprocket Settings', icon: Truck },
+] as const;
+
 export default function AdminReturns() {
   const { user, loading } = useAuth();
   const { toast } = useToast();
