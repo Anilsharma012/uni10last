@@ -62,7 +62,14 @@ const MyOrders = () => {
   const [loading, setLoading] = useState(true);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [returnReason, setReturnReason] = useState('');
+  const [refundMethod, setRefundMethod] = useState<'upi' | 'bank'>('upi');
   const [upiId, setUpiId] = useState('');
+  const [bankDetails, setBankDetails] = useState({
+    accountHolderName: '',
+    bankName: '',
+    accountNumber: '',
+    ifscCode: '',
+  });
   const [photoUrl, setPhotoUrl] = useState('');
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
