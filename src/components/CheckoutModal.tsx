@@ -328,6 +328,33 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
     }
   }
 
+  // Save address to user profile if not already saved
+  const saveAddressIfNeeded = async () => {
+    // If address is already selected from saved addresses, no need to save
+    if (selectedAddress) {
+      return;
+    }
+
+    try {
+      await api('/api/auth/addresses', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: name.trim(),
+          phone: phone.trim(),
+          houseNumber: streetAddress.trim(),
+          area: address.trim(),
+          city: city.trim(),
+          state: stateName.trim(),
+          pincode: pincode.trim(),
+          landmark: landmark.trim(),
+        }),
+      });
+    } catch (error) {
+      console.warn('Failed to save address:', error);
+      // Don't fail the order if address save fails
+    }
+  };
+
   // ✅ COD LOGIC from second code – proper order create + placeOrder + localStorage
   const handleCodOrder = async () => {
     if (!name || !phone || !address || !streetAddress) {
@@ -344,6 +371,9 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
     }
 
     setSubmitting(true);
+
+    // Save address to user profile
+    await saveAddressIfNeeded();
 
     const payload: any = {
       name,
