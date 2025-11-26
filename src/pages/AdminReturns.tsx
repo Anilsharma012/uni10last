@@ -25,6 +25,13 @@ interface ReturnOrder {
   returnStatus?: 'Pending' | 'Approved' | 'Rejected' | 'None';
   returnReason?: string;
   refundUpiId?: string;
+  refundMethod?: 'upi' | 'bank';
+  refundBankDetails?: {
+    accountHolderName: string;
+    bankName: string;
+    accountNumber: string;
+    ifscCode: string;
+  };
   returnRequestedAt?: string;
 }
 
