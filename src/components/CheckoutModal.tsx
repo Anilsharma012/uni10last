@@ -295,6 +295,9 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
       return;
     }
     try {
+      // Save address to user profile
+      await saveAddressIfNeeded();
+
       setSubmitting(true);
       const response = await fetch("/api/payment/manual", {
         method: "POST",
@@ -454,7 +457,7 @@ export const CheckoutModal: React.FC<Props> = ({ open, setOpen }) => {
           name,
           phone,
           address,
-          streetAddress, // �� ADD STREET ADDRESS
+          streetAddress, // ✅ ADD STREET ADDRESS
           landmark,
           city,
           state: stateName,
