@@ -448,9 +448,9 @@ router.put('/:id/admin-update', requireAuth, requireAdmin, async (req, res) => {
     }
 
     // Update return status if provided
-    if (returnStatus && ['None', 'Pending', 'Approved', 'Rejected'].includes(returnStatus)) {
+    if (returnStatus && ['None', 'Pending', 'Processing', 'Completed', 'Rejected'].includes(returnStatus)) {
       order.returnStatus = returnStatus;
-      if (returnStatus === 'Approved') {
+      if (returnStatus === 'Completed') {
         order.status = 'returned';
       }
     }
