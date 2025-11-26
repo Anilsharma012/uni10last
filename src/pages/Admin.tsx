@@ -699,9 +699,17 @@ const Admin = () => {
       : (Array.isArray((product as any).attributes?.colors)
           ? (product as any).attributes.colors
           : []),
+    colorInventory: Array.isArray(product.colorInventory) ? product.colorInventory : [],
     highlights: Array.isArray(product.highlights) ? product.highlights : [],
     longDescription: product.longDescription ?? '',
     specs: Array.isArray(product.specs) ? product.specs : [],
+    discount: product.discount ? {
+      type: product.discount.type ?? 'flat',
+      value: product.discount.value ?? 0,
+    } : {
+      type: 'flat',
+      value: 0,
+    },
   });
 
     setIsDialogOpen(true);
