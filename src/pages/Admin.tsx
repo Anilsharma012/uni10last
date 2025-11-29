@@ -668,6 +668,7 @@ const Admin = () => {
 
   const startEdit = (product: any) => {
     setEditingProduct(product);
+    setHasUnsavedChanges(false);
 
     // Find categoryId based on product.category (name)
     let foundCategoryId = (product as any).categoryId || '';
