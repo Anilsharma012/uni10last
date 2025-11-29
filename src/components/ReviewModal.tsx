@@ -18,6 +18,7 @@ interface ReviewModalProps {
 
 interface ReviewFormData {
   text: string;
+  rating: number;
 }
 
 export const ReviewModal = ({ open, onOpenChange, productId, orderId, onSuccess }: ReviewModalProps) => {
@@ -25,9 +26,10 @@ export const ReviewModal = ({ open, onOpenChange, productId, orderId, onSuccess 
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [hoveredRating, setHoveredRating] = useState(0);
 
   const form = useForm<ReviewFormData>({
-    defaultValues: { text: '' },
+    defaultValues: { text: '', rating: 5 },
   });
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
