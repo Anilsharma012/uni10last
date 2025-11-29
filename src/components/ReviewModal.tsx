@@ -92,11 +92,17 @@ export const ReviewModal = ({ open, onOpenChange, productId, orderId, onSuccess 
       return;
     }
 
+    if (!formData.rating || formData.rating < 1 || formData.rating > 5) {
+      toast({ title: 'Please select a rating (1-5 stars)', variant: 'destructive' });
+      return;
+    }
+
     setSubmitting(true);
     try {
       const body: any = {
         productId,
         text: formData.text,
+        rating: formData.rating,
         images,
       };
 
