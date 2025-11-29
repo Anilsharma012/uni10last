@@ -567,6 +567,8 @@ const ProductDetail = () => {
             <ProductImageGallery
               images={product?.images || []}
               productTitle={title}
+              selectedColor={selectedColor}
+              colorImages={product?.colorImages}
             />
           </div>
 
