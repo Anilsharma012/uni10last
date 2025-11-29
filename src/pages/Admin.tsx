@@ -1577,6 +1577,7 @@ const handleDialogOpenChange = async (open: boolean) => {
         (productForm as any).categoryId !== '' ||
         productForm.longDescription !== (editingProduct.longDescription ?? '') ||
         JSON.stringify(productForm.colors) !== JSON.stringify(editingProduct.colors ?? []) ||
+        JSON.stringify(productForm.colorImages) !== JSON.stringify((editingProduct as any).colorImages ?? {}) ||
         JSON.stringify(productForm.highlights) !== JSON.stringify(editingProduct.highlights ?? []) ||
         JSON.stringify(productForm.specs) !== JSON.stringify(editingProduct.specs ?? []);
 
