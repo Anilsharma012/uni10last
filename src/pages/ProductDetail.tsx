@@ -97,6 +97,7 @@ type P = {
   updatedAt?: string;
   // ✅ NEW: colors array from backend (["Black","Red",...])
   colors?: string[];
+  colorImages?: Record<string, string[]>;
 };
 
 const ProductDetail = () => {
