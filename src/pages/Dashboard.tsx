@@ -71,6 +71,8 @@ export default function Dashboard() {
   const [openCheckout, setOpenCheckout] = useState(false);
   const [activeTab, setActiveTab] = useState<"orders" | "returns" | "cart" | "wishlist">("orders");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [reviewingProduct, setReviewingProduct] = useState<{ productId: string; orderId: string; title: string } | null>(null);
 
   // Protect route
   useEffect(() => {
