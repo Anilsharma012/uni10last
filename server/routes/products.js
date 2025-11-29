@@ -201,7 +201,7 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
     if (typeof body.description !== 'undefined') updates.description = body.description;
     if (typeof body.longDescription !== 'undefined') updates.longDescription = body.longDescription;
     if (typeof body.price !== 'undefined') updates.price = Number(body.price);
-    if (typeof body.category !== 'undefined') updates.category = body.category;
+    if (typeof body.category !== 'undefined' && body.category) updates.category = body.category;
     if (typeof body.stock !== 'undefined') updates.stock = Number(body.stock);
     if (typeof body.active !== 'undefined') updates.active = !!body.active;
     if (typeof body.featured !== 'undefined') updates.featured = !!body.featured;
