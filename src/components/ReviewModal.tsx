@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { api } from '@/lib/api';
-import { X, Upload } from 'lucide-react';
+import { X, Upload, Star } from 'lucide-react';
 
 interface ReviewModalProps {
   open: boolean;
