@@ -3097,6 +3097,167 @@ const handleProductSubmit = async (e: React.FormEvent) => {
             </form>
           </DialogContent>
         </Dialog>
+
+        <Drawer open={viewDrawerOpen} onOpenChange={setViewDrawerOpen}>
+          <DrawerContent className="max-h-[90vh] overflow-y-auto">
+            <DrawerHeader>
+              <DrawerTitle>Product Details</DrawerTitle>
+              <DrawerDescription>
+                View product information
+              </DrawerDescription>
+            </DrawerHeader>
+            {viewingProduct && (
+              <div className="space-y-6 p-4 pb-20">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2">Product Image</h3>
+                    <img
+                      src={(function(){
+                        const url = (viewingProduct as any).image_url || (viewingProduct as any).images?.[0] || '/placeholder.svg';
+                        const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL || '';
+                        if (!url) return '/placeholder.svg';
+                        if (String(url).startsWith('http')) return url;
+                        if (String(url).startsWith('/uploads') || String(url).startsWith('uploads')) {
+                          const isLocalBase = (() => { try { return API_BASE.includes('localhost') || API_BASE.includes('127.0.0.1'); } catch { return false; } })();
+                          const isHttpsPage = (() => { try { return location.protocol === 'https:'; } catch { return false; } })();
+                          if (API_BASE && !(isLocalBase && isHttpsPage)) {
+                            const base = API_BASE.endsWith('/') ? API_BASE.slice(0,-1) : API_BASE;
+                            return String(url).startsWith('/') ? `${base}${url}` : `${base}/${url}`;
+                          } else {
+                            return String(url).startsWith('/') ? `/api${url}` : `/api/${url}`;
+                          }
+                        }
+                        return url;
+                      })()}
+                      alt={(viewingProduct as any).name || (viewingProduct as any).title || 'Product'}
+                      className="w-full h-auto object-cover rounded-lg border"
+                    />
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="font-semibold text-lg">{(viewingProduct as any).name || (viewingProduct as any).title}</h3>
+                      <p className="text-muted-foreground text-sm mt-1">{viewingProduct.category || 'No category'}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-semibold">Price</Label>
+                      <p className="text-2xl font-bold text-primary">₹{Number(viewingProduct.price ?? 0).toLocaleString('en-IN')}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-semibold">Stock</Label>
+                      <p className="text-lg">{viewingProduct.stock ?? 0} units</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-semibold">Status</Label>
+                      <Badge variant={viewingProduct.active ? 'default' : 'secondary'}>
+                        {viewingProduct.active ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t pt-6">
+                  <Label className="text-sm font-semibold">Description</Label>
+                  <p className="text-sm text-muted-foreground mt-2">{viewingProduct.description || 'No description'}</p>
+                </div>
+
+                {viewingProduct.longDescription && (
+                  <div className="border-t pt-6">
+                    <Label className="text-sm font-semibold">Long Description</Label>
+                    <p className="text-sm text-muted-foreground mt-2">{viewingProduct.longDescription}</p>
+                  </div>
+                )}
+
+                {Array.isArray((viewingProduct as any).sizes) && (viewingProduct as any).sizes.length > 0 && (
+                  <div className="border-t pt-6">
+                    <Label className="text-sm font-semibold">Available Sizes</Label>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {(viewingProduct as any).sizes.map((size: string, idx: number) => (
+                        <Badge key={idx} variant="outline">{size}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {Array.isArray((viewingProduct as any).colors) && (viewingProduct as any).colors.length > 0 && (
+                  <div className="border-t pt-6">
+                    <Label className="text-sm font-semibold">Available Colors</Label>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {(viewingProduct as any).colors.map((color: string, idx: number) => (
+                        <Badge key={idx} variant="outline">{color}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {Array.isArray((viewingProduct as any).highlights) && (viewingProduct as any).highlights.length > 0 && (
+                  <div className="border-t pt-6">
+                    <Label className="text-sm font-semibold">Highlights</Label>
+                    <ul className="list-disc list-inside text-sm text-muted-foreground mt-2 space-y-1">
+                      {(viewingProduct as any).highlights.map((h: string, idx: number) => (
+                        <li key={idx}>{h}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {Array.isArray((viewingProduct as any).specs) && (viewingProduct as any).specs.length > 0 && (
+                  <div className="border-t pt-6">
+                    <Label className="text-sm font-semibold">Specifications</Label>
+                    <div className="space-y-2 mt-2">
+                      {(viewingProduct as any).specs.map((spec: any, idx: number) => (
+                        <div key={idx} className="flex justify-between text-sm">
+                          <span className="font-medium">{spec.key}:</span>
+                          <span className="text-muted-foreground">{spec.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {(viewingProduct as any).discount && (viewingProduct as any).discount.value > 0 && (
+                  <div className="border-t pt-6">
+                    <Label className="text-sm font-semibold">Discount</Label>
+                    <Badge className="mt-2">
+                      {(viewingProduct as any).discount.type === 'percentage'
+                        ? `${(viewingProduct as any).discount.value}% off`
+                        : `₹${(viewingProduct as any).discount.value} off`}
+                    </Badge>
+                  </div>
+                )}
+
+                {Array.isArray((viewingProduct as any).images) && (viewingProduct as any).images.length > 1 && (
+                  <div className="border-t pt-6">
+                    <Label className="text-sm font-semibold">All Images</Label>
+                    <div className="grid grid-cols-3 gap-2 mt-2">
+                      {(viewingProduct as any).images.map((img: string, idx: number) => (
+                        <img
+                          key={idx}
+                          src={(function(){
+                            const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL || '';
+                            if (String(img).startsWith('http')) return img;
+                            if (String(img).startsWith('/uploads') || String(img).startsWith('uploads')) {
+                              const isLocalBase = (() => { try { return API_BASE.includes('localhost') || API_BASE.includes('127.0.0.1'); } catch { return false; } })();
+                              const isHttpsPage = (() => { try { return location.protocol === 'https:'; } catch { return false; } })();
+                              if (API_BASE && !(isLocalBase && isHttpsPage)) {
+                                const base = API_BASE.endsWith('/') ? API_BASE.slice(0,-1) : API_BASE;
+                                return String(img).startsWith('/') ? `${base}${img}` : `${base}/${img}`;
+                              } else {
+                                return String(img).startsWith('/') ? `/api${img}` : `/api/${img}`;
+                              }
+                            }
+                            return img;
+                          })()}
+                          alt={`Product ${idx + 1}`}
+                          className="w-full h-24 object-cover rounded border"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </DrawerContent>
+        </Drawer>
       </div>
 
       {fetching ? (
