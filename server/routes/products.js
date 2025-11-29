@@ -166,6 +166,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
           })).filter(spec => spec.key && spec.value)
         : [],
       sizeChart: body.sizeChart || undefined,
+      colorImages: body.colorImages && typeof body.colorImages === 'object' ? body.colorImages : {},
       active: typeof body.active === 'boolean' ? body.active : true,
     };
 
