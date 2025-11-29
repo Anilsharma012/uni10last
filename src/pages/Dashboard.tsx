@@ -9,7 +9,8 @@ import { useCart } from "@/contexts/CartContext";
 import { api } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { CheckoutModal } from "@/components/CheckoutModal";
-import { Menu, X } from "lucide-react";
+import { ReviewModal } from "@/components/ReviewModal";
+import { Menu, X, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Types for orders and items
@@ -70,6 +71,8 @@ export default function Dashboard() {
   const [openCheckout, setOpenCheckout] = useState(false);
   const [activeTab, setActiveTab] = useState<"orders" | "returns" | "cart" | "wishlist">("orders");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [reviewingProduct, setReviewingProduct] = useState<{ productId: string; orderId: string; title: string } | null>(null);
 
   // Protect route
   useEffect(() => {
@@ -157,6 +160,17 @@ export default function Dashboard() {
   const reorder = (order: Order) => {
     order.items.forEach((it) => addToCart({ id: it.id, title: it.title, price: it.price, image: it.image }));
     toast({ title: "Added to cart", description: `Reordered ${order.items.length} item(s)` });
+  };
+
+  const openReviewModal = (productId: string, orderId: string, productTitle: string) => {
+    setReviewingProduct({ productId, orderId, title: productTitle });
+    setReviewModalOpen(true);
+  };
+
+  const handleReviewSuccess = () => {
+    setReviewModalOpen(false);
+    setReviewingProduct(null);
+    toast({ title: "Success", description: "Your review has been submitted and is pending approval." });
   };
 
   const statusBadge = (s: string) => {
@@ -422,12 +436,38 @@ export default function Dashboard() {
                                 </tbody>
                               </table>
                             </div>
+                            {expanded[o._id + '_review'] && o.status === 'delivered' && (
+                              <div className="mt-4 mb-4 p-4 bg-muted/30 rounded-lg border border-border">
+                                <h4 className="font-semibold text-sm mb-3">Select product to review:</h4>
+                                <div className="space-y-2">
+                                  {o.items.map((item, idx) => (
+                                    <button
+                                      key={idx}
+                                      onClick={() => openReviewModal(item.id, o._id, item.title)}
+                                      className="w-full flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors text-left"
+                                    >
+                                      <img
+                                        src={item.image || "/placeholder.svg"}
+                                        alt={item.title}
+                                        className="w-12 h-12 object-cover rounded border"
+                                      />
+                                      <div className="flex-1 min-w-0">
+                                        <p className="font-medium text-sm truncate">{item.title}</p>
+                                        <p className="text-xs text-muted-foreground">Qty: {item.qty}</p>
+                                      </div>
+                                      <Star className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
                             <div className="mt-4 flex items-center justify-between gap-2 flex-wrap">
                               <div className="text-sm text-muted-foreground">
                                 Payment: {o.paymentMethod || o.payment || "-"}
                                 {o.upi?.txnId ? <span className="ml-3 text-xs">UTR: {o.upi.txnId}</span> : null}
                               </div>
-                              <div className="flex gap-2">
+                              <div className="flex gap-2 flex-wrap">
                                 <Link to={`/account/orders/${o._id}/invoice`}>
                                   <Button size="sm" variant="outline">
                                     View Invoice
@@ -436,6 +476,17 @@ export default function Dashboard() {
                                 <Button size="sm" onClick={() => reorder(o)}>
                                   Reorder
                                 </Button>
+                                {o.status === 'delivered' && (
+                                  <button
+                                    onClick={() => {
+                                      setExpanded((p) => ({ ...p, [o._id + '_review']: !(p[o._id + '_review']) }));
+                                    }}
+                                    className="text-sm font-medium text-primary hover:underline flex items-center gap-1"
+                                  >
+                                    <Star className="h-4 w-4" />
+                                    Write Review
+                                  </button>
+                                )}
                                 {(() => {
                                   const deliveredAt = (o as any).deliveredAt || (o.status === 'delivered' ? (o as any).updatedAt : null);
                                   const within7 = deliveredAt ? (Date.now() - new Date(deliveredAt).getTime() <= 7*24*60*60*1000) : false;
@@ -563,6 +614,15 @@ export default function Dashboard() {
       </main>
       <Footer />
       <CheckoutModal open={openCheckout} setOpen={setOpenCheckout} />
+      {reviewingProduct && (
+        <ReviewModal
+          open={reviewModalOpen}
+          onOpenChange={setReviewModalOpen}
+          productId={reviewingProduct.productId}
+          orderId={reviewingProduct.orderId}
+          onSuccess={handleReviewSuccess}
+        />
+      )}
     </div>
   );
 }

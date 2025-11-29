@@ -922,29 +922,6 @@ const ProductDetail = () => {
                   Product Details
                 </h2>
 
-                {/* ✅ NEW: Available Colors block inside Product Details */}
-                {Array.isArray(product.colors) && product.colors.length > 0 && (
-                  <div id="colors" className="mb-6 sm:mb-8">
-                    <h3 className="text-sm sm:text-base font-semibold mb-3 sm:mb-4">
-                      Available Colors
-                    </h3>
-                    <div className="flex flex-wrap gap-2 sm:gap-3">
-                      {product.colors.map((c) => (
-                        <span
-                          key={c}
-                          className="inline-flex items-center gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border text-xs sm:text-sm"
-                        >
-                          <span
-                            className="h-4 w-4 rounded-full border border-border"
-                            style={{ backgroundColor: colorToCss(c) }}
-                          />
-                          <span>{c}</span>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
                 {product?.highlights &&
                   product.highlights.length > 0 && (
                     <div
