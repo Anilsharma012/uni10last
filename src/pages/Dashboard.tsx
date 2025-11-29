@@ -614,6 +614,15 @@ export default function Dashboard() {
       </main>
       <Footer />
       <CheckoutModal open={openCheckout} setOpen={setOpenCheckout} />
+      {reviewingProduct && (
+        <ReviewModal
+          open={reviewModalOpen}
+          onOpenChange={setReviewModalOpen}
+          productId={reviewingProduct.productId}
+          orderId={reviewingProduct.orderId}
+          onSuccess={handleReviewSuccess}
+        />
+      )}
     </div>
   );
 }
