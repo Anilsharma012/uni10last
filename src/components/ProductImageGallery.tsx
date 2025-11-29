@@ -61,7 +61,7 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
     setSelectedIndex(0);
   }, [selectedColor]);
 
-  const imagesToUse = selectedColor && colorImages?.[selectedColor]?.length > 0
+  const imagesToUse = selectedColor && colorImages && typeof colorImages === 'object' && colorImages[selectedColor]?.length > 0
     ? colorImages[selectedColor]
     : images;
 
