@@ -149,6 +149,42 @@ export const ReviewModal = ({ open, onOpenChange, productId, orderId, onSuccess 
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
+              name="rating"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Rating *</FormLabel>
+                  <div className="flex gap-2 items-center">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => field.onChange(star)}
+                        onMouseEnter={() => setHoveredRating(star)}
+                        onMouseLeave={() => setHoveredRating(0)}
+                        className="transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded"
+                      >
+                        <Star
+                          className={`h-6 w-6 ${
+                            star <= (hoveredRating || field.value)
+                              ? 'fill-yellow-400 text-yellow-400'
+                              : 'text-muted-foreground'
+                          }`}
+                        />
+                      </button>
+                    ))}
+                    {field.value && (
+                      <span className="text-sm font-medium text-muted-foreground">
+                        {field.value} out of 5
+                      </span>
+                    )}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="text"
               render={({ field }) => (
                 <FormItem>
