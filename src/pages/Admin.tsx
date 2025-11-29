@@ -658,6 +658,12 @@ const Admin = () => {
   const resetForm = () => {
     setProductForm(EMPTY_FORM);
     setEditingProduct(null);
+    setHasUnsavedChanges(false);
+  };
+
+  const handleProductFormChange = (updater: any) => {
+    setProductForm(updater);
+    setHasUnsavedChanges(true);
   };
 
   const startEdit = (product: any) => {
