@@ -504,6 +504,10 @@ const Admin = () => {
   const [selectAllOnPage, setSelectAllOnPage] = useState(false);
   const [selectAllResults, setSelectAllResults] = useState(false);
 
+  // Product view drawer state
+  const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
+  const [viewDrawerOpen, setViewDrawerOpen] = useState(false);
+
   // Notifications state
   const [notifySearch, setNotifySearch] = useState('');
   const [notifySelectedIds, setNotifySelectedIds] = useState<Set<string>>(new Set());
