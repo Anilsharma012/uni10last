@@ -5,6 +5,8 @@ import { cn } from '@/lib/utils';
 interface ProductImageGalleryProps {
   images?: string[];
   productTitle?: string;
+  selectedColor?: string;
+  colorImages?: Record<string, string[]>;
 }
 
 const resolveImage = (src?: string) => {
