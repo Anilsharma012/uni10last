@@ -738,6 +738,7 @@ const Admin = () => {
           ? (product as any).attributes.colors
           : []),
     colorInventory: Array.isArray(product.colorInventory) ? product.colorInventory : [],
+    colorImages: (product as any).colorImages && typeof (product as any).colorImages === 'object' ? (product as any).colorImages : {},
     highlights: Array.isArray(product.highlights) ? product.highlights : [],
     longDescription: product.longDescription ?? '',
     specs: Array.isArray(product.specs) ? product.specs : [],
