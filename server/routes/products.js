@@ -337,12 +337,13 @@ router.get('/:id/related', async (req, res) => {
       $lte: basePrice + priceRange,
     };
 
-    // First, try to find products by category
+    // First, try to find products by category (case-insensitive)
     if (product.category) {
+      const categoryRegex = new RegExp(`^${product.category.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
       const filter = {
         active: true,
         _id: { $ne: id },
-        category: product.category,
+        category: categoryRegex,
         price: priceFilter,
       };
 
