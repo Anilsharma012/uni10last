@@ -130,9 +130,10 @@ const ProductDetail = () => {
         const { ok, json } = await api(`/api/products/${id}`);
         if (!ok) throw new Error(json?.message || json?.error || "Failed to load product");
         if (!ignore) {
-          setProduct(json?.data as P);
+          const productData = json?.data as P;
+          setProduct(productData);
           setSelectedSize(""); // reset size on product change
-          setSelectedColor(""); // ✅ reset color on product change
+          setSelectedColor(productData?.colors?.[0] || ""); // ✅ set to first color on product load
           setQuantity(1);
         }
       } catch (e: any) {
