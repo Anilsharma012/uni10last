@@ -43,6 +43,8 @@ const resolveImage = (src?: string) => {
 export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   images = [],
   productTitle = 'Product',
+  selectedColor,
+  colorImages,
 }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
@@ -55,7 +57,15 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const validImages = images
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [selectedColor]);
+
+  const imagesToUse = selectedColor && colorImages?.[selectedColor]?.length > 0
+    ? colorImages[selectedColor]
+    : images;
+
+  const validImages = imagesToUse
     .filter((img) => img && String(img).length > 0)
     .map(resolveImage);
 
