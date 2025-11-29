@@ -658,14 +658,32 @@ const Admin = () => {
 
   const startEdit = (product: any) => {
     setEditingProduct(product);
+
+    // Find categoryId based on product.category (name)
+    let foundCategoryId = (product as any).categoryId || '';
+    let foundSubcategoryId = (product as any).subcategoryId || '';
+
+    if (!foundCategoryId && product.category) {
+      const matchingCat = categories.find((c: any) =>
+        (c.name || c.slug) === product.category || c._id === product.category
+      );
+      if (matchingCat) {
+        foundCategoryId = matchingCat._id || matchingCat.id;
+        // Also load subcategories if this is a parent category
+        if (foundCategoryId && !foundSubcategoryId) {
+          void fetchChildren(foundCategoryId);
+        }
+      }
+    }
+
     setProductForm({
     name: product.name ?? product.title ?? '',
     description: product.description ?? product.attributes?.description ?? '',
     price: Number(product.price ?? 0),
     image_url: product.image_url ?? (Array.isArray(product.images) ? product.images[0] : '') ?? '',
     images: Array.isArray(product.images) ? product.images : [],
-    categoryId: (product as any).categoryId || '',
-    subcategoryId: (product as any).subcategoryId || '',
+    categoryId: foundCategoryId,
+    subcategoryId: foundSubcategoryId,
     stock: Number(product.stock ?? 0),
     sizes: Array.isArray((product as any).sizes)
       ? (product as any).sizes
