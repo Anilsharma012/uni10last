@@ -1589,6 +1589,15 @@ const handleProductSubmit = async (e: React.FormEvent) => {
           }
         : undefined;
 
+      // Determine category name from selectedcategoryId
+      let categoryName = undefined;
+      if ((productForm as any).categoryId) {
+        const selectedCat = categories.find((c: any) => (c._id || c.id) === (productForm as any).categoryId);
+        if (selectedCat) {
+          categoryName = selectedCat.name;
+        }
+      }
+
       const payload = {
         name: productForm.name.trim(),
         description: productForm.description.trim(),
@@ -1600,6 +1609,7 @@ const handleProductSubmit = async (e: React.FormEvent) => {
         trackInventoryBySize: productForm.trackInventoryBySize,
         sizeInventory: Array.isArray(productForm.sizeInventory) ? productForm.sizeInventory : [],
         sizeChart: sizeChartPayload,
+        category: categoryName,
         categoryId: (productForm as any).categoryId || undefined,
         subcategoryId: (productForm as any).subcategoryId || undefined,
         colors: Array.isArray(productForm.colors)
