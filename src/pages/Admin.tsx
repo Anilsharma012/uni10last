@@ -434,6 +434,7 @@ const EMPTY_FORM: ProductFormState = {
   },
   colors: [],
   colorInventory: [],
+  colorImages: {},
   highlights: [],
   longDescription: '',
   specs: [],
