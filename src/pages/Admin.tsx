@@ -3206,14 +3206,14 @@ const handleProductSubmit = async (e: React.FormEvent) => {
           </DialogContent>
         </Dialog>
 
-        <Drawer open={viewDrawerOpen} onOpenChange={setViewDrawerOpen}>
-          <DrawerContent className="max-h-[90vh] overflow-y-auto">
-            <DrawerHeader>
-              <DrawerTitle>Product Details</DrawerTitle>
-              <DrawerDescription>
+        <Dialog open={viewDrawerOpen} onOpenChange={setViewDrawerOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Product Details</DialogTitle>
+              <DialogDescription>
                 View product information
-              </DrawerDescription>
-            </DrawerHeader>
+              </DialogDescription>
+            </DialogHeader>
             {viewingProduct && (
               <div className="space-y-6 p-4 pb-20">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -3364,8 +3364,8 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                 )}
               </div>
             )}
-          </DrawerContent>
-        </Drawer>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {fetching ? (
