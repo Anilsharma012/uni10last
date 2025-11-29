@@ -54,7 +54,7 @@ router.get('/', async (req, res) => {
 // Create or update review (idempotent)
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const { productId, orderId, text, images = [] } = req.body || {};
+    const { productId, orderId, text, rating, images = [] } = req.body || {};
 
     if (!productId || !text) {
       return res.status(400).json({ ok: false, message: 'Missing productId or text' });
@@ -62,6 +62,10 @@ router.post('/', requireAuth, async (req, res) => {
 
     if (text.length < 20 || text.length > 1000) {
       return res.status(400).json({ ok: false, message: 'Review text must be 20-1000 characters' });
+    }
+
+    if (!rating || rating < 1 || rating > 5 || !Number.isInteger(rating)) {
+      return res.status(400).json({ ok: false, message: 'Rating must be an integer between 1 and 5' });
     }
 
     if (!Array.isArray(images) || images.length > 3) {
@@ -78,6 +82,7 @@ router.post('/', requireAuth, async (req, res) => {
       productId,
       userId: req.user._id,
       text: sanitized,
+      rating: Number(rating),
       images: images.filter(img => typeof img === 'string' && img.trim().length > 0),
       status: 'published',
     };

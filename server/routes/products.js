@@ -201,7 +201,7 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
     if (typeof body.description !== 'undefined') updates.description = body.description;
     if (typeof body.longDescription !== 'undefined') updates.longDescription = body.longDescription;
     if (typeof body.price !== 'undefined') updates.price = Number(body.price);
-    if (typeof body.category !== 'undefined') updates.category = body.category;
+    if (typeof body.category !== 'undefined' && body.category) updates.category = body.category;
     if (typeof body.stock !== 'undefined') updates.stock = Number(body.stock);
     if (typeof body.active !== 'undefined') updates.active = !!body.active;
     if (typeof body.featured !== 'undefined') updates.featured = !!body.featured;
@@ -330,20 +330,37 @@ router.get('/:id/related', async (req, res) => {
     const product = await Product.findById(id).lean();
     if (!product) return res.status(404).json({ ok: false, message: 'Product not found' });
 
-    const filter = {
-      active: true,
-      _id: { $ne: id },
-      category: product.category,
-    };
-
     const basePrice = Number(product.price || 0);
     const priceRange = basePrice * 0.5;
-    filter.price = {
+    const priceFilter = {
       $gte: Math.max(0, basePrice - priceRange),
       $lte: basePrice + priceRange,
     };
 
-    const related = await Product.find(filter).limit(limit).lean();
+    // First, try to find products by category (case-insensitive)
+    if (product.category) {
+      const categoryRegex = new RegExp(`^${product.category.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+      const filter = {
+        active: true,
+        _id: { $ne: id },
+        category: categoryRegex,
+        price: priceFilter,
+      };
+
+      const related = await Product.find(filter).limit(limit).lean();
+      if (related.length > 0) {
+        return res.json({ ok: true, data: related });
+      }
+    }
+
+    // Fallback: if no category products found or no category, find by price range only
+    const fallbackFilter = {
+      active: true,
+      _id: { $ne: id },
+      price: priceFilter,
+    };
+
+    const related = await Product.find(fallbackFilter).limit(limit).lean();
     return res.json({ ok: true, data: related });
   } catch (e) {
     console.error(e);

@@ -20,24 +20,25 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import {
-  Loader2,
-  Trash2,
-  Edit,
-  Plus,
-  LayoutDashboard,
-  Package,
-  Receipt,
-  Users2,
-  CreditCard,
-  Truck,
-  Tags,
-  MessageCircle,
-  Megaphone,
-  Star,
-  Percent,
-  Menu,
-  X,
-} from 'lucide-react';
+    Loader2,
+    Trash2,
+    Edit,
+    Eye,
+    Plus,
+    LayoutDashboard,
+    Package,
+    Receipt,
+    Users2,
+    CreditCard,
+    Truck,
+    Tags,
+    MessageCircle,
+    Megaphone,
+    Star,
+    Percent,
+    Menu,
+    X,
+  } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -504,6 +505,13 @@ const Admin = () => {
   const [selectAllOnPage, setSelectAllOnPage] = useState(false);
   const [selectAllResults, setSelectAllResults] = useState(false);
 
+  // Product view drawer state
+  const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
+  const [viewDrawerOpen, setViewDrawerOpen] = useState(false);
+
+  // Track if product form has unsaved changes for auto-save
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
   // Notifications state
   const [notifySearch, setNotifySearch] = useState('');
   const [notifySelectedIds, setNotifySelectedIds] = useState<Set<string>>(new Set());
@@ -650,18 +658,43 @@ const Admin = () => {
   const resetForm = () => {
     setProductForm(EMPTY_FORM);
     setEditingProduct(null);
+    setHasUnsavedChanges(false);
+  };
+
+  const handleProductFormChange = (updater: any) => {
+    setProductForm(updater);
+    setHasUnsavedChanges(true);
   };
 
   const startEdit = (product: any) => {
     setEditingProduct(product);
+    setHasUnsavedChanges(false);
+
+    // Find categoryId based on product.category (name)
+    let foundCategoryId = (product as any).categoryId || '';
+    let foundSubcategoryId = (product as any).subcategoryId || '';
+
+    if (!foundCategoryId && product.category) {
+      const matchingCat = categories.find((c: any) =>
+        (c.name || c.slug) === product.category || c._id === product.category
+      );
+      if (matchingCat) {
+        foundCategoryId = matchingCat._id || matchingCat.id;
+        // Also load subcategories if this is a parent category
+        if (foundCategoryId && !foundSubcategoryId) {
+          void fetchChildren(foundCategoryId);
+        }
+      }
+    }
+
     setProductForm({
     name: product.name ?? product.title ?? '',
     description: product.description ?? product.attributes?.description ?? '',
     price: Number(product.price ?? 0),
     image_url: product.image_url ?? (Array.isArray(product.images) ? product.images[0] : '') ?? '',
     images: Array.isArray(product.images) ? product.images : [],
-    categoryId: (product as any).categoryId || '',
-    subcategoryId: (product as any).subcategoryId || '',
+    categoryId: foundCategoryId,
+    subcategoryId: foundSubcategoryId,
     stock: Number(product.stock ?? 0),
     sizes: Array.isArray((product as any).sizes)
       ? (product as any).sizes
@@ -1529,6 +1562,106 @@ const Admin = () => {
     }
   };
 
+const handleDialogOpenChange = async (open: boolean) => {
+    if (!open && editingProduct) {
+      // Check if form has changed and auto-save if it has
+      const formChanged =
+        productForm.name !== (editingProduct.name ?? editingProduct.title ?? '') ||
+        productForm.description !== (editingProduct.description ?? editingProduct.attributes?.description ?? '') ||
+        productForm.price !== Number(editingProduct.price ?? 0) ||
+        productForm.stock !== Number(editingProduct.stock ?? 0) ||
+        (productForm as any).categoryId !== '' ||
+        productForm.longDescription !== (editingProduct.longDescription ?? '') ||
+        JSON.stringify(productForm.colors) !== JSON.stringify(editingProduct.colors ?? []) ||
+        JSON.stringify(productForm.highlights) !== JSON.stringify(editingProduct.highlights ?? []) ||
+        JSON.stringify(productForm.specs) !== JSON.stringify(editingProduct.specs ?? []);
+
+      if (formChanged) {
+        // Auto-save when closing dialog with changes
+        const price = Number(productForm.price);
+        const stock = Number(productForm.stock);
+        if (!Number.isNaN(price) && !Number.isNaN(stock) && price >= 0 && stock >= 0 && productForm.name.trim()) {
+          try {
+            setSaving(true);
+
+            // Determine category name from selectedcategoryId
+            let categoryName = undefined;
+            if ((productForm as any).categoryId) {
+              const selectedCat = categories.find((c: any) => (c._id || c.id) === (productForm as any).categoryId);
+              if (selectedCat) {
+                categoryName = selectedCat.name;
+              }
+            }
+
+            const sizeChartData = productForm.sizeChart;
+            const sizeChartPayload = sizeChartData && (sizeChartData.title.trim() || sizeChartData.rows?.length > 0 || sizeChartData.guidelines.trim())
+              ? {
+                  title: sizeChartData.title.trim() || undefined,
+                  fieldLabels: {
+                    chest: sizeChartData.fieldLabels?.chest?.trim() || 'Chest',
+                    waist: sizeChartData.fieldLabels?.waist?.trim() || 'Waist',
+                    length: sizeChartData.fieldLabels?.length?.trim() || 'Length',
+                  },
+                  rows: Array.isArray(sizeChartData.rows)
+                    ? sizeChartData.rows.filter(r => r.sizeLabel?.trim()).map(r => ({
+                        sizeLabel: r.sizeLabel?.trim(),
+                        chest: r.chest?.trim(),
+                        waist: r.waist?.trim(),
+                        length: r.length?.trim(),
+                      }))
+                    : [],
+                  guidelines: sizeChartData.guidelines.trim() || undefined,
+                  diagramUrl: sizeChartData.diagramUrl?.trim() || undefined,
+                }
+              : undefined;
+
+            const payload = {
+              name: productForm.name.trim(),
+              description: productForm.description.trim(),
+              price,
+              image_url: productForm.image_url.trim(),
+              images: Array.isArray(productForm.images) ? productForm.images.filter(img => img?.trim()) : [],
+              stock,
+              sizes: Array.isArray(productForm.sizes) ? productForm.sizes : [],
+              trackInventoryBySize: productForm.trackInventoryBySize,
+              sizeInventory: Array.isArray(productForm.sizeInventory) ? productForm.sizeInventory : [],
+              sizeChart: sizeChartPayload,
+              category: categoryName,
+              categoryId: (productForm as any).categoryId || undefined,
+              subcategoryId: (productForm as any).subcategoryId || undefined,
+              colors: Array.isArray(productForm.colors)
+                ? productForm.colors.filter((c) => c.trim())
+                : [],
+              colorInventory: Array.isArray(productForm.colorInventory) ? productForm.colorInventory.filter(c => c.color.trim() && c.qty > 0) : [],
+              highlights: Array.isArray(productForm.highlights) ? productForm.highlights.filter(h => h.trim()) : [],
+              longDescription: productForm.longDescription.trim(),
+              specs: Array.isArray(productForm.specs) ? productForm.specs.filter(s => s.key.trim() && s.value.trim()) : [],
+              discount: productForm.discount && productForm.discount.value > 0 ? {
+                type: productForm.discount.type,
+                value: productForm.discount.value,
+              } : undefined,
+            };
+
+            await apiFetch(`${ENDPOINTS.products}/${(editingProduct as any).id || (editingProduct as any)._id}`, {
+              method: 'PUT',
+              body: JSON.stringify(payload),
+            });
+            toast.success('Product auto-saved successfully');
+          } catch (error: any) {
+            console.error('Auto-save error:', error);
+            // Silent auto-save error - don't disrupt user experience
+          } finally {
+            setSaving(false);
+          }
+        }
+      }
+    }
+    setIsDialogOpen(open);
+    if (!open) {
+      resetForm();
+    }
+  };
+
 const handleProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -1567,6 +1700,15 @@ const handleProductSubmit = async (e: React.FormEvent) => {
           }
         : undefined;
 
+      // Determine category name from selectedcategoryId
+      let categoryName = undefined;
+      if ((productForm as any).categoryId) {
+        const selectedCat = categories.find((c: any) => (c._id || c.id) === (productForm as any).categoryId);
+        if (selectedCat) {
+          categoryName = selectedCat.name;
+        }
+      }
+
       const payload = {
         name: productForm.name.trim(),
         description: productForm.description.trim(),
@@ -1578,6 +1720,7 @@ const handleProductSubmit = async (e: React.FormEvent) => {
         trackInventoryBySize: productForm.trackInventoryBySize,
         sizeInventory: Array.isArray(productForm.sizeInventory) ? productForm.sizeInventory : [],
         sizeChart: sizeChartPayload,
+        category: categoryName,
         categoryId: (productForm as any).categoryId || undefined,
         subcategoryId: (productForm as any).subcategoryId || undefined,
         colors: Array.isArray(productForm.colors)
@@ -1608,6 +1751,7 @@ const handleProductSubmit = async (e: React.FormEvent) => {
       }
 
       setIsDialogOpen(false);
+      setHasUnsavedChanges(false);
       resetForm();
       void fetchAdminResources();
     } catch (error: any) {
@@ -2331,10 +2475,7 @@ const handleProductSubmit = async (e: React.FormEvent) => {
         </div>
         <Dialog
           open={isDialogOpen}
-          onOpenChange={(open) => {
-            setIsDialogOpen(open);
-            if (!open) resetForm();
-          }}
+          onOpenChange={handleDialogOpenChange}
         >
           <DialogTrigger asChild>
             <Button onClick={() => { resetForm(); setIsDialogOpen(true); }}>
@@ -3064,6 +3205,167 @@ const handleProductSubmit = async (e: React.FormEvent) => {
             </form>
           </DialogContent>
         </Dialog>
+
+        <Dialog open={viewDrawerOpen} onOpenChange={setViewDrawerOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Product Details</DialogTitle>
+              <DialogDescription>
+                View product information
+              </DialogDescription>
+            </DialogHeader>
+            {viewingProduct && (
+              <div className="space-y-6 p-4 pb-20">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="font-semibold text-lg mb-2">Product Image</h3>
+                    <img
+                      src={(function(){
+                        const url = (viewingProduct as any).image_url || (viewingProduct as any).images?.[0] || '/placeholder.svg';
+                        const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL || '';
+                        if (!url) return '/placeholder.svg';
+                        if (String(url).startsWith('http')) return url;
+                        if (String(url).startsWith('/uploads') || String(url).startsWith('uploads')) {
+                          const isLocalBase = (() => { try { return API_BASE.includes('localhost') || API_BASE.includes('127.0.0.1'); } catch { return false; } })();
+                          const isHttpsPage = (() => { try { return location.protocol === 'https:'; } catch { return false; } })();
+                          if (API_BASE && !(isLocalBase && isHttpsPage)) {
+                            const base = API_BASE.endsWith('/') ? API_BASE.slice(0,-1) : API_BASE;
+                            return String(url).startsWith('/') ? `${base}${url}` : `${base}/${url}`;
+                          } else {
+                            return String(url).startsWith('/') ? `/api${url}` : `/api/${url}`;
+                          }
+                        }
+                        return url;
+                      })()}
+                      alt={(viewingProduct as any).name || (viewingProduct as any).title || 'Product'}
+                      className="w-full h-auto object-cover rounded-lg border"
+                    />
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="font-semibold text-lg">{(viewingProduct as any).name || (viewingProduct as any).title}</h3>
+                      <p className="text-muted-foreground text-sm mt-1">{viewingProduct.category || 'No category'}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-semibold">Price</Label>
+                      <p className="text-2xl font-bold text-primary">₹{Number(viewingProduct.price ?? 0).toLocaleString('en-IN')}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-semibold">Stock</Label>
+                      <p className="text-lg">{viewingProduct.stock ?? 0} units</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-semibold">Status</Label>
+                      <Badge variant={viewingProduct.active ? 'default' : 'secondary'}>
+                        {viewingProduct.active ? 'Active' : 'Inactive'}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t pt-6">
+                  <Label className="text-sm font-semibold">Description</Label>
+                  <p className="text-sm text-muted-foreground mt-2">{viewingProduct.description || 'No description'}</p>
+                </div>
+
+                {viewingProduct.longDescription && (
+                  <div className="border-t pt-6">
+                    <Label className="text-sm font-semibold">Long Description</Label>
+                    <p className="text-sm text-muted-foreground mt-2">{viewingProduct.longDescription}</p>
+                  </div>
+                )}
+
+                {Array.isArray((viewingProduct as any).sizes) && (viewingProduct as any).sizes.length > 0 && (
+                  <div className="border-t pt-6">
+                    <Label className="text-sm font-semibold">Available Sizes</Label>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {(viewingProduct as any).sizes.map((size: string, idx: number) => (
+                        <Badge key={idx} variant="outline">{size}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {Array.isArray((viewingProduct as any).colors) && (viewingProduct as any).colors.length > 0 && (
+                  <div className="border-t pt-6">
+                    <Label className="text-sm font-semibold">Available Colors</Label>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {(viewingProduct as any).colors.map((color: string, idx: number) => (
+                        <Badge key={idx} variant="outline">{color}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {Array.isArray((viewingProduct as any).highlights) && (viewingProduct as any).highlights.length > 0 && (
+                  <div className="border-t pt-6">
+                    <Label className="text-sm font-semibold">Highlights</Label>
+                    <ul className="list-disc list-inside text-sm text-muted-foreground mt-2 space-y-1">
+                      {(viewingProduct as any).highlights.map((h: string, idx: number) => (
+                        <li key={idx}>{h}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {Array.isArray((viewingProduct as any).specs) && (viewingProduct as any).specs.length > 0 && (
+                  <div className="border-t pt-6">
+                    <Label className="text-sm font-semibold">Specifications</Label>
+                    <div className="space-y-2 mt-2">
+                      {(viewingProduct as any).specs.map((spec: any, idx: number) => (
+                        <div key={idx} className="flex justify-between text-sm">
+                          <span className="font-medium">{spec.key}:</span>
+                          <span className="text-muted-foreground">{spec.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {(viewingProduct as any).discount && (viewingProduct as any).discount.value > 0 && (
+                  <div className="border-t pt-6">
+                    <Label className="text-sm font-semibold">Discount</Label>
+                    <Badge className="mt-2">
+                      {(viewingProduct as any).discount.type === 'percentage'
+                        ? `${(viewingProduct as any).discount.value}% off`
+                        : `₹${(viewingProduct as any).discount.value} off`}
+                    </Badge>
+                  </div>
+                )}
+
+                {Array.isArray((viewingProduct as any).images) && (viewingProduct as any).images.length > 1 && (
+                  <div className="border-t pt-6">
+                    <Label className="text-sm font-semibold">All Images</Label>
+                    <div className="grid grid-cols-3 gap-2 mt-2">
+                      {(viewingProduct as any).images.map((img: string, idx: number) => (
+                        <img
+                          key={idx}
+                          src={(function(){
+                            const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL || '';
+                            if (String(img).startsWith('http')) return img;
+                            if (String(img).startsWith('/uploads') || String(img).startsWith('uploads')) {
+                              const isLocalBase = (() => { try { return API_BASE.includes('localhost') || API_BASE.includes('127.0.0.1'); } catch { return false; } })();
+                              const isHttpsPage = (() => { try { return location.protocol === 'https:'; } catch { return false; } })();
+                              if (API_BASE && !(isLocalBase && isHttpsPage)) {
+                                const base = API_BASE.endsWith('/') ? API_BASE.slice(0,-1) : API_BASE;
+                                return String(img).startsWith('/') ? `${base}${img}` : `${base}/${img}`;
+                              } else {
+                                return String(img).startsWith('/') ? `/api${img}` : `/api/${img}`;
+                              }
+                            }
+                            return img;
+                          })()}
+                          alt={`Product ${idx + 1}`}
+                          className="w-full h-24 object-cover rounded border"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
 
       {fetching ? (
@@ -3109,6 +3411,17 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                   </div>
                 </div>
                 <div className="flex gap-2">
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    onClick={() => {
+                      setViewingProduct(product as any);
+                      setViewDrawerOpen(true);
+                    }}
+                    title="View product details"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
                   <Button size="icon" variant="outline" onClick={() => startEdit(product as any)}>
                     <Edit className="h-4 w-4" />
                   </Button>

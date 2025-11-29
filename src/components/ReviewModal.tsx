@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { api } from '@/lib/api';
-import { X, Upload } from 'lucide-react';
+import { X, Upload, Star } from 'lucide-react';
 
 interface ReviewModalProps {
   open: boolean;
@@ -18,6 +18,7 @@ interface ReviewModalProps {
 
 interface ReviewFormData {
   text: string;
+  rating: number;
 }
 
 export const ReviewModal = ({ open, onOpenChange, productId, orderId, onSuccess }: ReviewModalProps) => {
@@ -25,9 +26,10 @@ export const ReviewModal = ({ open, onOpenChange, productId, orderId, onSuccess 
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [hoveredRating, setHoveredRating] = useState(0);
 
   const form = useForm<ReviewFormData>({
-    defaultValues: { text: '' },
+    defaultValues: { text: '', rating: 5 },
   });
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,11 +92,17 @@ export const ReviewModal = ({ open, onOpenChange, productId, orderId, onSuccess 
       return;
     }
 
+    if (!formData.rating || formData.rating < 1 || formData.rating > 5) {
+      toast({ title: 'Please select a rating (1-5 stars)', variant: 'destructive' });
+      return;
+    }
+
     setSubmitting(true);
     try {
       const body: any = {
         productId,
         text: formData.text,
+        rating: formData.rating,
         images,
       };
 
@@ -139,6 +147,42 @@ export const ReviewModal = ({ open, onOpenChange, productId, orderId, onSuccess 
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="rating"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Rating *</FormLabel>
+                  <div className="flex gap-2 items-center">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => field.onChange(star)}
+                        onMouseEnter={() => setHoveredRating(star)}
+                        onMouseLeave={() => setHoveredRating(0)}
+                        className="transition-colors focus:outline-none focus:ring-2 focus:ring-primary rounded"
+                      >
+                        <Star
+                          className={`h-6 w-6 ${
+                            star <= (hoveredRating || field.value)
+                              ? 'fill-yellow-400 text-yellow-400'
+                              : 'text-muted-foreground'
+                          }`}
+                        />
+                      </button>
+                    ))}
+                    {field.value && (
+                      <span className="text-sm font-medium text-muted-foreground">
+                        {field.value} out of 5
+                      </span>
+                    )}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={form.control}
               name="text"
