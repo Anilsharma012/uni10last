@@ -9,7 +9,8 @@ import { useCart } from "@/contexts/CartContext";
 import { api } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { CheckoutModal } from "@/components/CheckoutModal";
-import { Menu, X } from "lucide-react";
+import { ReviewModal } from "@/components/ReviewModal";
+import { Menu, X, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Types for orders and items
