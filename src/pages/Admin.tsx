@@ -2461,10 +2461,7 @@ const handleProductSubmit = async (e: React.FormEvent) => {
         </div>
         <Dialog
           open={isDialogOpen}
-          onOpenChange={(open) => {
-            setIsDialogOpen(open);
-            if (!open) resetForm();
-          }}
+          onOpenChange={handleDialogOpenChange}
         >
           <DialogTrigger asChild>
             <Button onClick={() => { resetForm(); setIsDialogOpen(true); }}>
