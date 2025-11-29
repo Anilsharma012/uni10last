@@ -441,7 +441,7 @@ export default function Dashboard() {
                                 Payment: {o.paymentMethod || o.payment || "-"}
                                 {o.upi?.txnId ? <span className="ml-3 text-xs">UTR: {o.upi.txnId}</span> : null}
                               </div>
-                              <div className="flex gap-2">
+                              <div className="flex gap-2 flex-wrap">
                                 <Link to={`/account/orders/${o._id}/invoice`}>
                                   <Button size="sm" variant="outline">
                                     View Invoice
@@ -450,6 +450,17 @@ export default function Dashboard() {
                                 <Button size="sm" onClick={() => reorder(o)}>
                                   Reorder
                                 </Button>
+                                {o.status === 'delivered' && (
+                                  <button
+                                    onClick={() => {
+                                      setExpanded((p) => ({ ...p, [o._id + '_review']: !(p[o._id + '_review']) }));
+                                    }}
+                                    className="text-sm font-medium text-primary hover:underline flex items-center gap-1"
+                                  >
+                                    <Star className="h-4 w-4" />
+                                    Write Review
+                                  </button>
+                                )}
                                 {(() => {
                                   const deliveredAt = (o as any).deliveredAt || (o.status === 'delivered' ? (o as any).updatedAt : null);
                                   const within7 = deliveredAt ? (Date.now() - new Date(deliveredAt).getTime() <= 7*24*60*60*1000) : false;
