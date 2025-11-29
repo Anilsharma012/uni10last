@@ -1561,6 +1561,93 @@ const Admin = () => {
     }
   };
 
+const handleDialogOpenChange = async (open: boolean) => {
+    if (!open && hasUnsavedChanges && editingProduct) {
+      // Auto-save when closing dialog with unsaved changes
+      const price = Number(productForm.price);
+      const stock = Number(productForm.stock);
+      if (!Number.isNaN(price) && !Number.isNaN(stock) && price >= 0 && stock >= 0) {
+        try {
+          setSaving(true);
+
+          // Determine category name from selectedcategoryId
+          let categoryName = undefined;
+          if ((productForm as any).categoryId) {
+            const selectedCat = categories.find((c: any) => (c._id || c.id) === (productForm as any).categoryId);
+            if (selectedCat) {
+              categoryName = selectedCat.name;
+            }
+          }
+
+          const sizeChartData = productForm.sizeChart;
+          const sizeChartPayload = sizeChartData && (sizeChartData.title.trim() || sizeChartData.rows?.length > 0 || sizeChartData.guidelines.trim())
+            ? {
+                title: sizeChartData.title.trim() || undefined,
+                fieldLabels: {
+                  chest: sizeChartData.fieldLabels?.chest?.trim() || 'Chest',
+                  waist: sizeChartData.fieldLabels?.waist?.trim() || 'Waist',
+                  length: sizeChartData.fieldLabels?.length?.trim() || 'Length',
+                },
+                rows: Array.isArray(sizeChartData.rows)
+                  ? sizeChartData.rows.filter(r => r.sizeLabel?.trim()).map(r => ({
+                      sizeLabel: r.sizeLabel?.trim(),
+                      chest: r.chest?.trim(),
+                      waist: r.waist?.trim(),
+                      length: r.length?.trim(),
+                    }))
+                  : [],
+                guidelines: sizeChartData.guidelines.trim() || undefined,
+                diagramUrl: sizeChartData.diagramUrl?.trim() || undefined,
+              }
+            : undefined;
+
+          const payload = {
+            name: productForm.name.trim(),
+            description: productForm.description.trim(),
+            price,
+            image_url: productForm.image_url.trim(),
+            images: Array.isArray(productForm.images) ? productForm.images.filter(img => img?.trim()) : [],
+            stock,
+            sizes: Array.isArray(productForm.sizes) ? productForm.sizes : [],
+            trackInventoryBySize: productForm.trackInventoryBySize,
+            sizeInventory: Array.isArray(productForm.sizeInventory) ? productForm.sizeInventory : [],
+            sizeChart: sizeChartPayload,
+            category: categoryName,
+            categoryId: (productForm as any).categoryId || undefined,
+            subcategoryId: (productForm as any).subcategoryId || undefined,
+            colors: Array.isArray(productForm.colors)
+              ? productForm.colors.filter((c) => c.trim())
+              : [],
+            colorInventory: Array.isArray(productForm.colorInventory) ? productForm.colorInventory.filter(c => c.color.trim() && c.qty > 0) : [],
+            highlights: Array.isArray(productForm.highlights) ? productForm.highlights.filter(h => h.trim()) : [],
+            longDescription: productForm.longDescription.trim(),
+            specs: Array.isArray(productForm.specs) ? productForm.specs.filter(s => s.key.trim() && s.value.trim()) : [],
+            discount: productForm.discount && productForm.discount.value > 0 ? {
+              type: productForm.discount.type,
+              value: productForm.discount.value,
+            } : undefined,
+          };
+
+          await apiFetch(`${ENDPOINTS.products}/${(editingProduct as any).id || (editingProduct as any)._id}`, {
+            method: 'PUT',
+            body: JSON.stringify(payload),
+          });
+          toast.success('Product auto-saved successfully');
+          setHasUnsavedChanges(false);
+        } catch (error: any) {
+          console.error('Auto-save error:', error);
+          // Don't show error toast for auto-save, just log it
+        } finally {
+          setSaving(false);
+          setIsDialogOpen(open);
+          resetForm();
+        }
+        return;
+      }
+    }
+    setIsDialogOpen(open);
+  };
+
 const handleProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
