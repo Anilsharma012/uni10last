@@ -1637,6 +1637,7 @@ const handleDialogOpenChange = async (open: boolean) => {
                 ? productForm.colors.filter((c) => c.trim())
                 : [],
               colorInventory: Array.isArray(productForm.colorInventory) ? productForm.colorInventory.filter(c => c.color.trim() && c.qty > 0) : [],
+              colorImages: productForm.colorImages && typeof productForm.colorImages === 'object' ? productForm.colorImages : {},
               highlights: Array.isArray(productForm.highlights) ? productForm.highlights.filter(h => h.trim()) : [],
               longDescription: productForm.longDescription.trim(),
               specs: Array.isArray(productForm.specs) ? productForm.specs.filter(s => s.key.trim() && s.value.trim()) : [],
@@ -1731,6 +1732,7 @@ const handleProductSubmit = async (e: React.FormEvent) => {
           ? productForm.colors.filter((c) => c.trim())
           : [],
         colorInventory: Array.isArray(productForm.colorInventory) ? productForm.colorInventory.filter(c => c.color.trim() && c.qty > 0) : [],
+        colorImages: productForm.colorImages && typeof productForm.colorImages === 'object' ? productForm.colorImages : {},
         highlights: Array.isArray(productForm.highlights) ? productForm.highlights.filter(h => h.trim()) : [],
         longDescription: productForm.longDescription.trim(),
         specs: Array.isArray(productForm.specs) ? productForm.specs.filter(s => s.key.trim() && s.value.trim()) : [],
