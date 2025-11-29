@@ -38,6 +38,7 @@ import {
     Percent,
     Menu,
     X,
+    Upload,
   } from 'lucide-react';
 import {
   Dialog,
