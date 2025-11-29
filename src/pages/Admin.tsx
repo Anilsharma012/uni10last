@@ -3141,6 +3141,17 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                   </div>
                 </div>
                 <div className="flex gap-2">
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    onClick={() => {
+                      setViewingProduct(product as any);
+                      setViewDrawerOpen(true);
+                    }}
+                    title="View product details"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
                   <Button size="icon" variant="outline" onClick={() => startEdit(product as any)}>
                     <Edit className="h-4 w-4" />
                   </Button>
