@@ -1737,6 +1737,7 @@ const handleProductSubmit = async (e: React.FormEvent) => {
       }
 
       setIsDialogOpen(false);
+      setHasUnsavedChanges(false);
       resetForm();
       void fetchAdminResources();
     } catch (error: any) {
