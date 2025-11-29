@@ -162,6 +162,17 @@ export default function Dashboard() {
     toast({ title: "Added to cart", description: `Reordered ${order.items.length} item(s)` });
   };
 
+  const openReviewModal = (productId: string, orderId: string, productTitle: string) => {
+    setReviewingProduct({ productId, orderId, title: productTitle });
+    setReviewModalOpen(true);
+  };
+
+  const handleReviewSuccess = () => {
+    setReviewModalOpen(false);
+    setReviewingProduct(null);
+    toast({ title: "Success", description: "Your review has been submitted and is pending approval." });
+  };
+
   const statusBadge = (s: string) => {
     const base = "px-2 py-0.5 rounded text-xs font-medium capitalize";
     const map: Record<string, string> = {
