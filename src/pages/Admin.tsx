@@ -509,6 +509,9 @@ const Admin = () => {
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
   const [viewDrawerOpen, setViewDrawerOpen] = useState(false);
 
+  // Track if product form has unsaved changes for auto-save
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
   // Notifications state
   const [notifySearch, setNotifySearch] = useState('');
   const [notifySelectedIds, setNotifySelectedIds] = useState<Set<string>>(new Set());
