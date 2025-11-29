@@ -2876,6 +2876,110 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                 </div>
               )}
 
+              {productForm.colors.length > 0 && (
+                <div className="border-t border-border pt-4">
+                  <h3 className="text-sm font-semibold mb-4">Color-wise Images</h3>
+                  <p className="text-xs text-muted-foreground mb-4">Upload images for each color variant (up to 5 images per color)</p>
+                  <div className="space-y-4">
+                    {productForm.colors.map((color) => (
+                      <div key={color} className="border rounded-lg p-4 bg-muted/30">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="font-medium text-sm">{color}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {(productForm.colorImages[color]?.length ?? 0)} / 5 images
+                          </span>
+                        </div>
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const files = Array.from(e.target.files || []);
+                            const currentImages = productForm.colorImages[color] || [];
+
+                            if (currentImages.length + files.length > 5) {
+                              alert(`Maximum 5 images per color. Currently have ${currentImages.length}, trying to add ${files.length}.`);
+                              return;
+                            }
+
+                            const newImages = [...currentImages];
+
+                            for (const file of files) {
+                              try {
+                                const formData = new FormData();
+                                formData.append('file', file);
+                                const response = await fetch('/api/uploads/images', {
+                                  method: 'POST',
+                                  body: formData,
+                                  headers: {
+                                    Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+                                  },
+                                });
+
+                                if (!response.ok) throw new Error('Upload failed');
+                                const data = await response.json();
+                                if (data.ok && data.url) {
+                                  newImages.push(data.url);
+                                }
+                              } catch (err) {
+                                alert(`Failed to upload ${file.name}`);
+                              }
+                            }
+
+                            setProductForm((p) => ({
+                              ...p,
+                              colorImages: {
+                                ...p.colorImages,
+                                [color]: newImages,
+                              },
+                            }));
+                            e.target.value = '';
+                          }}
+                          className="hidden"
+                          id={`color-images-${color}`}
+                        />
+                        <label
+                          htmlFor={`color-images-${color}`}
+                          className="flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-border rounded-md cursor-pointer hover:bg-muted/50 transition-colors"
+                        >
+                          <Upload className="h-4 w-4" />
+                          <span className="text-sm">Click to upload images</span>
+                        </label>
+
+                        {(productForm.colorImages[color]?.length ?? 0) > 0 && (
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-3">
+                            {productForm.colorImages[color]?.map((img, idx) => (
+                              <div key={idx} className="relative group aspect-square rounded-md overflow-hidden bg-muted border">
+                                <img
+                                  src={img}
+                                  alt={`${color} ${idx + 1}`}
+                                  className="w-full h-full object-cover"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setProductForm((p) => ({
+                                      ...p,
+                                      colorImages: {
+                                        ...p.colorImages,
+                                        [color]: (p.colorImages[color] || []).filter((_, i) => i !== idx),
+                                      },
+                                    }));
+                                  }}
+                                  className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <X className="h-4 w-4 text-white" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="border-t border-border pt-4">
                 <h3 className="text-sm font-semibold mb-4">Discount</h3>
                 <div className="grid grid-cols-3 gap-3">
