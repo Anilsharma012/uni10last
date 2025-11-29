@@ -300,6 +300,9 @@ router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
         qty: Number(c.qty || 0)
       })).filter(c => c.color);
     }
+    if (body.colorImages !== undefined && typeof body.colorImages === 'object') {
+      updates.colorImages = body.colorImages;
+    }
     if (body.discount !== undefined && typeof body.discount === 'object') {
       updates.discount = {
         type: body.discount.type === 'percentage' ? 'percentage' : 'flat',
