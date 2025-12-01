@@ -98,6 +98,12 @@ type P = {
   // ✅ NEW: colors array from backend (["Black","Red",...])
   colors?: string[];
   colorImages?: Record<string, string[]>;
+  colorVariants?: Array<{
+    colorName: string;
+    colorCode?: string;
+    images: string[];
+    primaryImageIndex?: number;
+  }>;
 };
 
 const ProductDetail = () => {
