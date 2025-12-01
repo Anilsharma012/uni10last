@@ -2522,7 +2522,17 @@ const handleProductSubmit = async (e: React.FormEvent) => {
               <Plus className="mr-2 h-4 w-4" /> Add Product
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent
+            className="max-w-2xl max-h-[90vh] overflow-y-auto"
+            onInteractOutside={(e) => {
+              // Prevent closing when clicking outside
+              e.preventDefault();
+            }}
+            onEscapeKeyDown={(e) => {
+              // Prevent closing with Escape key
+              e.preventDefault();
+            }}
+          >
             <DialogHeader>
               <DialogTitle>{editingProduct ? 'Edit Product' : 'Add New Product'}</DialogTitle>
               <DialogDescription>
