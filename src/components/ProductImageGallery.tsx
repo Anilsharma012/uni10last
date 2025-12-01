@@ -51,6 +51,7 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   productTitle = 'Product',
   selectedColor,
   colorImages,
+  colorVariants,
 }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
@@ -63,13 +64,44 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [selectedColor]);
+  // Get images for the selected color
+  // First, try the new colorVariants structure
+  // Then fallback to old colorImages structure
+  // Finally, fallback to default images
+  const getImagesForSelectedColor = (): string[] => {
+    if (!selectedColor) return images;
 
-  const imagesToUse = selectedColor && colorImages && typeof colorImages === 'object' && colorImages[selectedColor]?.length > 0
-    ? colorImages[selectedColor]
-    : images;
+    // Try new colorVariants structure
+    if (colorVariants && Array.isArray(colorVariants)) {
+      const variant = colorVariants.find(cv => cv.colorName === selectedColor);
+      if (variant && Array.isArray(variant.images) && variant.images.length > 0) {
+        return variant.images;
+      }
+    }
+
+    // Fallback to old colorImages structure
+    if (colorImages && typeof colorImages === 'object' && colorImages[selectedColor]?.length > 0) {
+      return colorImages[selectedColor];
+    }
+
+    return images;
+  };
+
+  // Get the primary image index for the selected color
+  const getPrimaryImageIndex = (): number => {
+    if (!selectedColor || !colorVariants) return 0;
+
+    const variant = colorVariants.find(cv => cv.colorName === selectedColor);
+    return variant?.primaryImageIndex ?? 0;
+  };
+
+  const imagesToUse = getImagesForSelectedColor();
+  const primaryIndex = getPrimaryImageIndex();
+
+  // When color changes, set the main image to the primary image for that color
+  useEffect(() => {
+    setSelectedIndex(primaryIndex);
+  }, [selectedColor, primaryIndex]);
 
   const validImages = imagesToUse
     .filter((img) => img && String(img).length > 0)
