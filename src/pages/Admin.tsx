@@ -535,6 +535,7 @@ const Admin = () => {
   const [replyOpen, setReplyOpen] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [activeReview, setActiveReview] = useState<AdminReview | null>(null);
+  const [confirmCloseDialogOpen, setConfirmCloseDialogOpen] = useState(false);
 
   const filteredNotifyUsers = useMemo(() => {
     const q = notifySearch.trim().toLowerCase();
