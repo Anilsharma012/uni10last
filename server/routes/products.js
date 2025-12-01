@@ -133,6 +133,16 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
         ? [body.color]
         : (Array.isArray(body.attributes?.colors) ? body.attributes.colors : []),
 
+      // ✅ NEW: colorVariants with images and primary image support
+      colorVariants: Array.isArray(body.colorVariants)
+        ? body.colorVariants.map(cv => ({
+            colorName: String(cv.colorName || '').trim(),
+            colorCode: String(cv.colorCode || '').trim(),
+            images: Array.isArray(cv.images) ? cv.images.filter(img => String(img).trim()) : [],
+            primaryImageIndex: Number.isInteger(cv.primaryImageIndex) ? cv.primaryImageIndex : 0,
+          })).filter(cv => cv.colorName)
+        : [],
+
       sizes: Array.isArray(body.sizes) ? body.sizes : (Array.isArray(body.attributes?.sizes) ? body.attributes.sizes : []),
       trackInventoryBySize: typeof body.trackInventoryBySize === 'boolean' ? body.trackInventoryBySize : true,
       sizeInventory: Array.isArray(body.sizeInventory)
