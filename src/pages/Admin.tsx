@@ -1575,35 +1575,11 @@ const Admin = () => {
     }
   };
 
-const handleDialogOpenChange = async (open: boolean) => {
-    if (!open) {
-      // Check if form has changed
-      const formChanged = editingProduct && (
-        productForm.name !== (editingProduct.name ?? editingProduct.title ?? '') ||
-        productForm.description !== (editingProduct.description ?? editingProduct.attributes?.description ?? '') ||
-        productForm.price !== Number(editingProduct.price ?? 0) ||
-        productForm.stock !== Number(editingProduct.stock ?? 0) ||
-        (productForm as any).categoryId !== '' ||
-        productForm.longDescription !== (editingProduct.longDescription ?? '') ||
-        JSON.stringify(productForm.colors) !== JSON.stringify(editingProduct.colors ?? []) ||
-        JSON.stringify(productForm.colorImages) !== JSON.stringify((editingProduct as any).colorImages ?? {}) ||
-        JSON.stringify(productForm.colorVariants) !== JSON.stringify((editingProduct as any).colorVariants ?? []) ||
-        JSON.stringify(productForm.highlights) !== JSON.stringify(editingProduct.highlights ?? []) ||
-        JSON.stringify(productForm.specs) !== JSON.stringify(editingProduct.specs ?? [])
-      );
-
-      // If there are unsaved changes, show confirmation dialog instead of closing
-      if (formChanged) {
-        setConfirmCloseDialogOpen(true);
-        return; // Don't close the dialog yet
-      }
-
-      // No changes, safe to close
-      setIsDialogOpen(false);
-      return;
-    }
-
+const handleDialogOpenChange = (open: boolean) => {
     setIsDialogOpen(open);
+    if (!open) {
+      resetForm();
+    }
   };
 
   // Handle confirming to close dialog with unsaved changes
