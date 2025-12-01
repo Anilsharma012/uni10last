@@ -576,6 +576,7 @@ const ProductDetail = () => {
               productTitle={title}
               selectedColor={selectedColor}
               colorImages={product?.colorImages}
+              colorVariants={product?.colorVariants}
             />
           </div>
 
