@@ -2996,6 +2996,198 @@ const handleProductSubmit = async (e: React.FormEvent) => {
               )}
 
               <div className="border-t border-border pt-4">
+                <h3 className="text-sm font-semibold mb-4">Color Variants (Advanced)</h3>
+                <p className="text-xs text-muted-foreground mb-4">Define color variants with images and set a primary image for each color</p>
+
+                <div className="space-y-4">
+                  {productForm.colorVariants.map((variant, idx) => (
+                    <div key={idx} className="border rounded-lg p-4 bg-muted/20">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1 space-y-3">
+                          <div>
+                            <Label className="text-xs">Color Name *</Label>
+                            <Input
+                              value={variant.colorName}
+                              onChange={(e) => {
+                                const newVariants = [...productForm.colorVariants];
+                                newVariants[idx].colorName = e.target.value;
+                                setProductForm((p) => ({ ...p, colorVariants: newVariants }));
+                              }}
+                              placeholder="e.g. Black, Beige, Olive"
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs">Color Code (optional)</Label>
+                            <div className="flex gap-2 items-center mt-1">
+                              <Input
+                                type="color"
+                                value={variant.colorCode || '#000000'}
+                                onChange={(e) => {
+                                  const newVariants = [...productForm.colorVariants];
+                                  newVariants[idx].colorCode = e.target.value;
+                                  setProductForm((p) => ({ ...p, colorVariants: newVariants }));
+                                }}
+                                className="w-12 h-10 p-1"
+                              />
+                              <Input
+                                value={variant.colorCode}
+                                onChange={(e) => {
+                                  const newVariants = [...productForm.colorVariants];
+                                  newVariants[idx].colorCode = e.target.value;
+                                  setProductForm((p) => ({ ...p, colorVariants: newVariants }));
+                                }}
+                                placeholder="#000000"
+                                className="flex-1"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => {
+                            setProductForm((p) => ({
+                              ...p,
+                              colorVariants: p.colorVariants.filter((_, i) => i !== idx),
+                            }));
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      <div className="border-t pt-3">
+                        <Label className="text-xs block mb-2">Images for {variant.colorName || 'this color'}</Label>
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const files = Array.from(e.target.files || []);
+                            const currentImages = variant.images || [];
+
+                            if (currentImages.length + files.length > 5) {
+                              alert(`Maximum 5 images per color. Currently have ${currentImages.length}, trying to add ${files.length}.`);
+                              return;
+                            }
+
+                            const newImages = [...currentImages];
+
+                            for (const file of files) {
+                              try {
+                                const formData = new FormData();
+                                formData.append('file', file);
+                                const response = await fetch('/api/uploads/images', {
+                                  method: 'POST',
+                                  body: formData,
+                                  headers: {
+                                    Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+                                  },
+                                });
+
+                                if (!response.ok) throw new Error('Upload failed');
+                                const data = await response.json();
+                                if (data.ok && data.url) {
+                                  newImages.push(data.url);
+                                }
+                              } catch (err) {
+                                alert(`Failed to upload ${file.name}`);
+                              }
+                            }
+
+                            const newVariants = [...productForm.colorVariants];
+                            newVariants[idx].images = newImages;
+                            setProductForm((p) => ({ ...p, colorVariants: newVariants }));
+                            e.target.value = '';
+                          }}
+                          className="hidden"
+                          id={`variant-images-${idx}`}
+                        />
+                        <label
+                          htmlFor={`variant-images-${idx}`}
+                          className="flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-border rounded-md cursor-pointer hover:bg-muted/50 transition-colors"
+                        >
+                          <Upload className="h-4 w-4" />
+                          <span className="text-sm">{variant.images.length > 0 ? 'Add more images' : 'Click to upload images'}</span>
+                        </label>
+
+                        {variant.images.length > 0 && (
+                          <div className="mt-3 space-y-2">
+                            <p className="text-xs text-muted-foreground">
+                              {variant.images.length} image(s) - Primary: Image {(variant.primaryImageIndex ?? 0) + 1}
+                            </p>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                              {variant.images.map((img, imgIdx) => (
+                                <div key={imgIdx} className="relative group">
+                                  <div className="aspect-square rounded-md overflow-hidden bg-muted border">
+                                    <img
+                                      src={img}
+                                      alt={`${variant.colorName} ${imgIdx + 1}`}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                  <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity gap-1 p-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const newVariants = [...productForm.colorVariants];
+                                        newVariants[idx].primaryImageIndex = imgIdx;
+                                        setProductForm((p) => ({ ...p, colorVariants: newVariants }));
+                                      }}
+                                      className="text-xs bg-primary text-white px-2 py-1 rounded whitespace-nowrap"
+                                    >
+                                      {(variant.primaryImageIndex ?? 0) === imgIdx ? 'Primary ✓' : 'Set Primary'}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const newVariants = [...productForm.colorVariants];
+                                        newVariants[idx].images = variant.images.filter((_, i) => i !== imgIdx);
+                                        setProductForm((p) => ({ ...p, colorVariants: newVariants }));
+                                      }}
+                                      className="text-xs bg-destructive text-white px-2 py-1 rounded"
+                                    >
+                                      Delete
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setProductForm((p) => ({
+                      ...p,
+                      colorVariants: [
+                        ...p.colorVariants,
+                        {
+                          colorName: '',
+                          colorCode: '#000000',
+                          images: [],
+                          primaryImageIndex: 0,
+                        },
+                      ],
+                    }));
+                  }}
+                  className="mt-4"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Color Variant
+                </Button>
+              </div>
+
+              <div className="border-t border-border pt-4">
                 <h3 className="text-sm font-semibold mb-4">Discount</h3>
                 <div className="grid grid-cols-3 gap-3">
                   <div>
