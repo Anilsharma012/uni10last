@@ -399,6 +399,12 @@ type ProductFormState = {
   colors: string[];
   colorInventory: Array<{ color: string; qty: number }>;
   colorImages: Record<string, string[]>;
+  colorVariants: Array<{
+    colorName: string;
+    colorCode: string;
+    images: string[];
+    primaryImageIndex: number;
+  }>;
   highlights: string[];
   longDescription: string;
   specs: Array<{ key: string; value: string }>;
