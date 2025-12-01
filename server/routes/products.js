@@ -228,6 +228,16 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
       updates.colors = Array.isArray(body.color) ? body.color : [body.color];
     }
 
+    // ✅ NEW: update colorVariants with images and primary image
+    if (Array.isArray(body.colorVariants)) {
+      updates.colorVariants = body.colorVariants.map(cv => ({
+        colorName: String(cv.colorName || '').trim(),
+        colorCode: String(cv.colorCode || '').trim(),
+        images: Array.isArray(cv.images) ? cv.images.filter(img => String(img).trim()) : [],
+        primaryImageIndex: Number.isInteger(cv.primaryImageIndex) ? cv.primaryImageIndex : 0,
+      })).filter(cv => cv.colorName);
+    }
+
     if (Array.isArray(body.highlights)) updates.highlights = body.highlights.slice(0, 8);
     if (Array.isArray(body.specs)) {
       updates.specs = body.specs.map(spec => ({
