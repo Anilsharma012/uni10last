@@ -630,46 +630,56 @@ const ProductDetail = () => {
               }}
             />
 
-            {/* ✅ COLOR OPTIONS UI */}
-            {Array.isArray(product.colors) && product.colors.length > 0 && (
-              <div className="mb-4 sm:mb-6">
-                <label className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3">
-                  Color
-                </label>
-                <div className="flex flex-wrap gap-2 sm:gap-3">
-                  {product.colors.map((c) => {
-                    const colorStock = Array.isArray(product.colorInventory)
-                      ? product.colorInventory.find(ci => ci.color === c)?.qty ?? 0
-                      : Number(product.stock ?? 0);
-                    const isOutOfStock = colorStock === 0;
+            {/* ✅ COLOR OPTIONS UI - supports both old colors array and new colorVariants */}
+            {(() => {
+              // Use colorVariants if available, otherwise fallback to colors array
+              const colorOptions = product?.colorVariants?.length > 0
+                ? product.colorVariants.map(cv => ({ name: cv.colorName, code: cv.colorCode }))
+                : product?.colors?.length > 0
+                ? product.colors.map(c => ({ name: c, code: undefined }))
+                : [];
 
-                    return (
-                      <button
-                        key={c}
-                        type="button"
-                        disabled={isOutOfStock}
-                        onClick={() => setSelectedColor(c)}
-                        className={cn(
-                          "flex items-center gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border text-xs sm:text-sm transition-colors",
-                          isOutOfStock
-                            ? "opacity-50 cursor-not-allowed bg-muted border-border text-muted-foreground"
-                            : selectedColor === c
-                            ? "bg-primary text-primary-foreground border-primary"
-                            : "bg-transparent border-border hover:border-primary"
-                        )}
-                      >
-                        <span
-                          className="h-4 w-4 rounded-full border border-current"
-                          style={{ backgroundColor: colorToCss(c) }}
-                        />
-                        <span>{c}</span>
-                        {isOutOfStock && <span className="text-xs">Out of Stock</span>}
-                      </button>
-                    );
-                  })}
+              return colorOptions.length > 0 ? (
+                <div className="mb-4 sm:mb-6">
+                  <label className="block text-xs sm:text-sm font-semibold mb-2 sm:mb-3">
+                    Color
+                  </label>
+                  <div className="flex flex-wrap gap-2 sm:gap-3">
+                    {colorOptions.map((colorOpt) => {
+                      const c = colorOpt.name;
+                      const colorStock = Array.isArray(product.colorInventory)
+                        ? product.colorInventory.find(ci => ci.color === c)?.qty ?? 0
+                        : Number(product.stock ?? 0);
+                      const isOutOfStock = colorStock === 0;
+
+                      return (
+                        <button
+                          key={c}
+                          type="button"
+                          disabled={isOutOfStock}
+                          onClick={() => setSelectedColor(c)}
+                          className={cn(
+                            "flex items-center gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border text-xs sm:text-sm transition-colors",
+                            isOutOfStock
+                              ? "opacity-50 cursor-not-allowed bg-muted border-border text-muted-foreground"
+                              : selectedColor === c
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-transparent border-border hover:border-primary"
+                          )}
+                        >
+                          <span
+                            className="h-4 w-4 rounded-full border border-current"
+                            style={{ backgroundColor: colorOpt.code ? colorOpt.code : colorToCss(c) }}
+                          />
+                          <span>{c}</span>
+                          {isOutOfStock && <span className="text-xs">Out of Stock</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
+              ) : null;
+            })()}
 
             {/* Per-size inventory display */}
             {product?.trackInventoryBySize &&
