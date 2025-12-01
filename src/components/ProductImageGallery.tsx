@@ -7,6 +7,12 @@ interface ProductImageGalleryProps {
   productTitle?: string;
   selectedColor?: string;
   colorImages?: Record<string, string[]>;
+  colorVariants?: Array<{
+    colorName: string;
+    colorCode?: string;
+    images: string[];
+    primaryImageIndex?: number;
+  }>;
 }
 
 const resolveImage = (src?: string) => {
