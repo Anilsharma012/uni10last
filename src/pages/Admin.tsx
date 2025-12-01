@@ -1576,9 +1576,9 @@ const Admin = () => {
   };
 
 const handleDialogOpenChange = async (open: boolean) => {
-    if (!open && editingProduct) {
-      // Check if form has changed and auto-save if it has
-      const formChanged =
+    if (!open) {
+      // Check if form has changed
+      const formChanged = editingProduct && (
         productForm.name !== (editingProduct.name ?? editingProduct.title ?? '') ||
         productForm.description !== (editingProduct.description ?? editingProduct.attributes?.description ?? '') ||
         productForm.price !== Number(editingProduct.price ?? 0) ||
@@ -1589,9 +1589,30 @@ const handleDialogOpenChange = async (open: boolean) => {
         JSON.stringify(productForm.colorImages) !== JSON.stringify((editingProduct as any).colorImages ?? {}) ||
         JSON.stringify(productForm.colorVariants) !== JSON.stringify((editingProduct as any).colorVariants ?? []) ||
         JSON.stringify(productForm.highlights) !== JSON.stringify(editingProduct.highlights ?? []) ||
-        JSON.stringify(productForm.specs) !== JSON.stringify(editingProduct.specs ?? []);
+        JSON.stringify(productForm.specs) !== JSON.stringify(editingProduct.specs ?? [])
+      );
 
+      // If there are unsaved changes, show confirmation dialog instead of closing
       if (formChanged) {
+        setConfirmCloseDialogOpen(true);
+        return; // Don't close the dialog yet
+      }
+
+      // No changes, safe to close
+      setIsDialogOpen(false);
+      return;
+    }
+
+    setIsDialogOpen(open);
+  };
+
+  // Handle confirming to close dialog with unsaved changes
+  const handleConfirmClose = async (shouldSave: boolean) => {
+    if (shouldSave && editingProduct) {
+      // Auto-save when closing dialog with changes
+      const price = Number(productForm.price);
+      const stock = Number(productForm.stock);
+      if (!Number.isNaN(price) && !Number.isNaN(stock) && price >= 0 && stock >= 0 && productForm.name.trim()) {
         // Auto-save when closing dialog with changes
         const price = Number(productForm.price);
         const stock = Number(productForm.stock);
