@@ -139,7 +139,9 @@ const ProductDetail = () => {
           const productData = json?.data as P;
           setProduct(productData);
           setSelectedSize(""); // reset size on product change
-          setSelectedColor(productData?.colors?.[0] || ""); // ✅ set to first color on product load
+          // Set to first color from colorVariants if available, otherwise use colors array
+          const firstColor = productData?.colorVariants?.[0]?.colorName || productData?.colors?.[0] || "";
+          setSelectedColor(firstColor);
           setQuantity(1);
         }
       } catch (e: any) {
