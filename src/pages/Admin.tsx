@@ -442,6 +442,7 @@ const EMPTY_FORM: ProductFormState = {
   colors: [],
   colorInventory: [],
   colorImages: {},
+  colorVariants: [],
   highlights: [],
   longDescription: '',
   specs: [],
