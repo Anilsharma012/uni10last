@@ -87,16 +87,6 @@ router.get('/:idOrSlug', async (req, res) => {
     if (/^[0-9a-fA-F]{24}$/.test(idOrSlug)) doc = await Product.findById(idOrSlug).lean();
     if (!doc) doc = await Product.findOne({ slug: idOrSlug }).lean();
     if (!doc) return res.status(404).json({ ok: false, message: 'Not found' });
-
-    // Convert colorImages Map to plain object
-    if (doc && doc.colorImages && typeof doc.colorImages === 'object' && !(doc.colorImages instanceof Array)) {
-      if (typeof doc.colorImages.toObject === 'function') {
-        doc.colorImages = doc.colorImages.toObject();
-      } else if (doc.colorImages instanceof Map) {
-        doc.colorImages = Object.fromEntries(doc.colorImages);
-      }
-    }
-
     return res.json({ ok: true, data: doc });
   } catch (e) {
     console.error(e);
