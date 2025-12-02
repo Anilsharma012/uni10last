@@ -133,6 +133,16 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
         ? [body.color]
         : (Array.isArray(body.attributes?.colors) ? body.attributes.colors : []),
 
+      // ✅ NEW: colorVariants with images and primary image support
+      colorVariants: Array.isArray(body.colorVariants)
+        ? body.colorVariants.map(cv => ({
+            colorName: String(cv.colorName || '').trim(),
+            colorCode: String(cv.colorCode || '').trim(),
+            images: Array.isArray(cv.images) ? cv.images.filter(img => String(img).trim()) : [],
+            primaryImageIndex: Number.isInteger(cv.primaryImageIndex) ? cv.primaryImageIndex : 0,
+          })).filter(cv => cv.colorName)
+        : [],
+
       sizes: Array.isArray(body.sizes) ? body.sizes : (Array.isArray(body.attributes?.sizes) ? body.attributes.sizes : []),
       trackInventoryBySize: typeof body.trackInventoryBySize === 'boolean' ? body.trackInventoryBySize : true,
       sizeInventory: Array.isArray(body.sizeInventory)
@@ -166,6 +176,7 @@ router.post('/', requireAuth, requireAdmin, async (req, res) => {
           })).filter(spec => spec.key && spec.value)
         : [],
       sizeChart: body.sizeChart || undefined,
+      colorImages: body.colorImages && typeof body.colorImages === 'object' ? body.colorImages : {},
       active: typeof body.active === 'boolean' ? body.active : true,
     };
 
@@ -217,6 +228,16 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
       updates.colors = Array.isArray(body.color) ? body.color : [body.color];
     }
 
+    // ✅ NEW: update colorVariants with images and primary image
+    if (Array.isArray(body.colorVariants)) {
+      updates.colorVariants = body.colorVariants.map(cv => ({
+        colorName: String(cv.colorName || '').trim(),
+        colorCode: String(cv.colorCode || '').trim(),
+        images: Array.isArray(cv.images) ? cv.images.filter(img => String(img).trim()) : [],
+        primaryImageIndex: Number.isInteger(cv.primaryImageIndex) ? cv.primaryImageIndex : 0,
+      })).filter(cv => cv.colorName);
+    }
+
     if (Array.isArray(body.highlights)) updates.highlights = body.highlights.slice(0, 8);
     if (Array.isArray(body.specs)) {
       updates.specs = body.specs.map(spec => ({
@@ -237,6 +258,9 @@ router.put('/:id', requireAuth, requireAdmin, async (req, res) => {
         color: String(c.color || '').trim(),
         qty: Number(c.qty || 0)
       })).filter(c => c.color);
+    }
+    if (body.colorImages !== undefined && typeof body.colorImages === 'object') {
+      updates.colorImages = body.colorImages;
     }
     if (body.discount !== undefined && typeof body.discount === 'object') {
       updates.discount = {
@@ -296,6 +320,9 @@ router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
         qty: Number(c.qty || 0)
       })).filter(c => c.color);
     }
+    if (body.colorImages !== undefined && typeof body.colorImages === 'object') {
+      updates.colorImages = body.colorImages;
+    }
     if (body.discount !== undefined && typeof body.discount === 'object') {
       updates.discount = {
         type: body.discount.type === 'percentage' ? 'percentage' : 'flat',
@@ -310,6 +337,16 @@ router.patch('/:id', requireAuth, requireAdmin, async (req, res) => {
       updates.colors = body.colors;
     } else if (typeof body.color !== 'undefined') {
       updates.colors = Array.isArray(body.color) ? body.color : [body.color];
+    }
+
+    // ✅ NEW: update colorVariants with images and primary image
+    if (Array.isArray(body.colorVariants)) {
+      updates.colorVariants = body.colorVariants.map(cv => ({
+        colorName: String(cv.colorName || '').trim(),
+        colorCode: String(cv.colorCode || '').trim(),
+        images: Array.isArray(cv.images) ? cv.images.filter(img => String(img).trim()) : [],
+        primaryImageIndex: Number.isInteger(cv.primaryImageIndex) ? cv.primaryImageIndex : 0,
+      })).filter(cv => cv.colorName);
     }
 
     const doc = await Product.findByIdAndUpdate(id, updates, { new: true }).lean();

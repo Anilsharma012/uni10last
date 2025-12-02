@@ -38,6 +38,7 @@ import {
     Percent,
     Menu,
     X,
+    Upload,
   } from 'lucide-react';
 import {
   Dialog,
@@ -397,6 +398,13 @@ type ProductFormState = {
   };
   colors: string[];
   colorInventory: Array<{ color: string; qty: number }>;
+  colorImages: Record<string, string[]>;
+  colorVariants: Array<{
+    colorName: string;
+    colorCode: string;
+    images: string[];
+    primaryImageIndex: number;
+  }>;
   highlights: string[];
   longDescription: string;
   specs: Array<{ key: string; value: string }>;
@@ -433,6 +441,8 @@ const EMPTY_FORM: ProductFormState = {
   },
   colors: [],
   colorInventory: [],
+  colorImages: {},
+  colorVariants: [],
   highlights: [],
   longDescription: '',
   specs: [],
@@ -525,6 +535,7 @@ const Admin = () => {
   const [replyOpen, setReplyOpen] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [activeReview, setActiveReview] = useState<AdminReview | null>(null);
+  const [confirmCloseDialogOpen, setConfirmCloseDialogOpen] = useState(false);
 
   const filteredNotifyUsers = useMemo(() => {
     const q = notifySearch.trim().toLowerCase();
@@ -736,6 +747,8 @@ const Admin = () => {
           ? (product as any).attributes.colors
           : []),
     colorInventory: Array.isArray(product.colorInventory) ? product.colorInventory : [],
+    colorImages: (product as any).colorImages && typeof (product as any).colorImages === 'object' ? (product as any).colorImages : {},
+    colorVariants: Array.isArray((product as any).colorVariants) ? (product as any).colorVariants : [],
     highlights: Array.isArray(product.highlights) ? product.highlights : [],
     longDescription: product.longDescription ?? '',
     specs: Array.isArray(product.specs) ? product.specs : [],
@@ -1562,21 +1575,20 @@ const Admin = () => {
     }
   };
 
-const handleDialogOpenChange = async (open: boolean) => {
-    if (!open && editingProduct) {
-      // Check if form has changed and auto-save if it has
-      const formChanged =
-        productForm.name !== (editingProduct.name ?? editingProduct.title ?? '') ||
-        productForm.description !== (editingProduct.description ?? editingProduct.attributes?.description ?? '') ||
-        productForm.price !== Number(editingProduct.price ?? 0) ||
-        productForm.stock !== Number(editingProduct.stock ?? 0) ||
-        (productForm as any).categoryId !== '' ||
-        productForm.longDescription !== (editingProduct.longDescription ?? '') ||
-        JSON.stringify(productForm.colors) !== JSON.stringify(editingProduct.colors ?? []) ||
-        JSON.stringify(productForm.highlights) !== JSON.stringify(editingProduct.highlights ?? []) ||
-        JSON.stringify(productForm.specs) !== JSON.stringify(editingProduct.specs ?? []);
+const handleDialogOpenChange = (open: boolean) => {
+    setIsDialogOpen(open);
+    if (!open) {
+      resetForm();
+    }
+  };
 
-      if (formChanged) {
+  // Handle confirming to close dialog with unsaved changes
+  const handleConfirmClose = async (shouldSave: boolean) => {
+    if (shouldSave && editingProduct) {
+      // Auto-save when closing dialog with changes
+      const price = Number(productForm.price);
+      const stock = Number(productForm.stock);
+      if (!Number.isNaN(price) && !Number.isNaN(stock) && price >= 0 && stock >= 0 && productForm.name.trim()) {
         // Auto-save when closing dialog with changes
         const price = Number(productForm.price);
         const stock = Number(productForm.stock);
@@ -1633,6 +1645,8 @@ const handleDialogOpenChange = async (open: boolean) => {
                 ? productForm.colors.filter((c) => c.trim())
                 : [],
               colorInventory: Array.isArray(productForm.colorInventory) ? productForm.colorInventory.filter(c => c.color.trim() && c.qty > 0) : [],
+              colorImages: productForm.colorImages && typeof productForm.colorImages === 'object' ? productForm.colorImages : {},
+              colorVariants: Array.isArray(productForm.colorVariants) ? productForm.colorVariants : [],
               highlights: Array.isArray(productForm.highlights) ? productForm.highlights.filter(h => h.trim()) : [],
               longDescription: productForm.longDescription.trim(),
               specs: Array.isArray(productForm.specs) ? productForm.specs.filter(s => s.key.trim() && s.value.trim()) : [],
@@ -1727,6 +1741,8 @@ const handleProductSubmit = async (e: React.FormEvent) => {
           ? productForm.colors.filter((c) => c.trim())
           : [],
         colorInventory: Array.isArray(productForm.colorInventory) ? productForm.colorInventory.filter(c => c.color.trim() && c.qty > 0) : [],
+        colorImages: productForm.colorImages && typeof productForm.colorImages === 'object' ? productForm.colorImages : {},
+        colorVariants: Array.isArray(productForm.colorVariants) ? productForm.colorVariants : [],
         highlights: Array.isArray(productForm.highlights) ? productForm.highlights.filter(h => h.trim()) : [],
         longDescription: productForm.longDescription.trim(),
         specs: Array.isArray(productForm.specs) ? productForm.specs.filter(s => s.key.trim() && s.value.trim()) : [],
@@ -2482,7 +2498,17 @@ const handleProductSubmit = async (e: React.FormEvent) => {
               <Plus className="mr-2 h-4 w-4" /> Add Product
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent
+            className="max-w-2xl max-h-[90vh] overflow-y-auto"
+            onInteractOutside={(e) => {
+              // Prevent closing when clicking outside
+              e.preventDefault();
+            }}
+            onEscapeKeyDown={(e) => {
+              // Prevent closing with Escape key
+              e.preventDefault();
+            }}
+          >
             <DialogHeader>
               <DialogTitle>{editingProduct ? 'Edit Product' : 'Add New Product'}</DialogTitle>
               <DialogDescription>
@@ -2872,6 +2898,302 @@ const handleProductSubmit = async (e: React.FormEvent) => {
                   </p>
                 </div>
               )}
+
+              {productForm.colors.length > 0 && (
+                <div className="border-t border-border pt-4">
+                  <h3 className="text-sm font-semibold mb-4">Color-wise Images</h3>
+                  <p className="text-xs text-muted-foreground mb-4">Upload images for each color variant (up to 5 images per color)</p>
+                  <div className="space-y-4">
+                    {productForm.colors.map((color) => (
+                      <div key={color} className="border rounded-lg p-4 bg-muted/30">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="font-medium text-sm">{color}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {(productForm.colorImages[color]?.length ?? 0)} / 5 images
+                          </span>
+                        </div>
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const files = Array.from(e.target.files || []);
+                            const currentImages = productForm.colorImages[color] || [];
+
+                            if (currentImages.length + files.length > 5) {
+                              alert(`Maximum 5 images per color. Currently have ${currentImages.length}, trying to add ${files.length}.`);
+                              return;
+                            }
+
+                            const newImages = [...currentImages];
+
+                            for (const file of files) {
+                              try {
+                                const formData = new FormData();
+                                formData.append('file', file);
+                                const response = await fetch('/api/uploads/images', {
+                                  method: 'POST',
+                                  body: formData,
+                                  headers: {
+                                    Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+                                  },
+                                });
+
+                                if (!response.ok) throw new Error('Upload failed');
+                                const data = await response.json();
+                                if (data.ok && data.url) {
+                                  newImages.push(data.url);
+                                }
+                              } catch (err) {
+                                alert(`Failed to upload ${file.name}`);
+                              }
+                            }
+
+                            setProductForm((p) => ({
+                              ...p,
+                              colorImages: {
+                                ...p.colorImages,
+                                [color]: newImages,
+                              },
+                            }));
+                            e.target.value = '';
+                          }}
+                          className="hidden"
+                          id={`color-images-${color}`}
+                        />
+                        <label
+                          htmlFor={`color-images-${color}`}
+                          className="flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-border rounded-md cursor-pointer hover:bg-muted/50 transition-colors"
+                        >
+                          <Upload className="h-4 w-4" />
+                          <span className="text-sm">Click to upload images</span>
+                        </label>
+
+                        {(productForm.colorImages[color]?.length ?? 0) > 0 && (
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-3">
+                            {productForm.colorImages[color]?.map((img, idx) => (
+                              <div key={idx} className="relative group aspect-square rounded-md overflow-hidden bg-muted border">
+                                <img
+                                  src={img}
+                                  alt={`${color} ${idx + 1}`}
+                                  className="w-full h-full object-cover"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setProductForm((p) => ({
+                                      ...p,
+                                      colorImages: {
+                                        ...p.colorImages,
+                                        [color]: (p.colorImages[color] || []).filter((_, i) => i !== idx),
+                                      },
+                                    }));
+                                  }}
+                                  className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <X className="h-4 w-4 text-white" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="border-t border-border pt-4">
+                <h3 className="text-sm font-semibold mb-4">Color Variants (Advanced)</h3>
+                <p className="text-xs text-muted-foreground mb-4">Define color variants with images and set a primary image for each color</p>
+
+                <div className="space-y-4">
+                  {productForm.colorVariants.map((variant, idx) => (
+                    <div key={idx} className="border rounded-lg p-4 bg-muted/20">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1 space-y-3">
+                          <div>
+                            <Label className="text-xs">Color Name *</Label>
+                            <Input
+                              value={variant.colorName}
+                              onChange={(e) => {
+                                const newVariants = [...productForm.colorVariants];
+                                newVariants[idx].colorName = e.target.value;
+                                setProductForm((p) => ({ ...p, colorVariants: newVariants }));
+                              }}
+                              placeholder="e.g. Black, Beige, Olive"
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs">Color Code (optional)</Label>
+                            <div className="flex gap-2 items-center mt-1">
+                              <Input
+                                type="color"
+                                value={variant.colorCode || '#000000'}
+                                onChange={(e) => {
+                                  const newVariants = [...productForm.colorVariants];
+                                  newVariants[idx].colorCode = e.target.value;
+                                  setProductForm((p) => ({ ...p, colorVariants: newVariants }));
+                                }}
+                                className="w-12 h-10 p-1"
+                              />
+                              <Input
+                                value={variant.colorCode}
+                                onChange={(e) => {
+                                  const newVariants = [...productForm.colorVariants];
+                                  newVariants[idx].colorCode = e.target.value;
+                                  setProductForm((p) => ({ ...p, colorVariants: newVariants }));
+                                }}
+                                placeholder="#000000"
+                                className="flex-1"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => {
+                            setProductForm((p) => ({
+                              ...p,
+                              colorVariants: p.colorVariants.filter((_, i) => i !== idx),
+                            }));
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      <div className="border-t pt-3">
+                        <Label className="text-xs block mb-2">Images for {variant.colorName || 'this color'}</Label>
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const files = Array.from(e.target.files || []);
+                            const currentImages = variant.images || [];
+
+                            if (currentImages.length + files.length > 5) {
+                              alert(`Maximum 5 images per color. Currently have ${currentImages.length}, trying to add ${files.length}.`);
+                              return;
+                            }
+
+                            const newImages = [...currentImages];
+
+                            for (const file of files) {
+                              try {
+                                const formData = new FormData();
+                                formData.append('file', file);
+                                const response = await fetch('/api/uploads/images', {
+                                  method: 'POST',
+                                  body: formData,
+                                  headers: {
+                                    Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+                                  },
+                                });
+
+                                if (!response.ok) throw new Error('Upload failed');
+                                const data = await response.json();
+                                if (data.ok && data.url) {
+                                  newImages.push(data.url);
+                                }
+                              } catch (err) {
+                                alert(`Failed to upload ${file.name}`);
+                              }
+                            }
+
+                            const newVariants = [...productForm.colorVariants];
+                            newVariants[idx].images = newImages;
+                            setProductForm((p) => ({ ...p, colorVariants: newVariants }));
+                            e.target.value = '';
+                          }}
+                          className="hidden"
+                          id={`variant-images-${idx}`}
+                        />
+                        <label
+                          htmlFor={`variant-images-${idx}`}
+                          className="flex items-center justify-center gap-2 px-4 py-2 border-2 border-dashed border-border rounded-md cursor-pointer hover:bg-muted/50 transition-colors"
+                        >
+                          <Upload className="h-4 w-4" />
+                          <span className="text-sm">{variant.images.length > 0 ? 'Add more images' : 'Click to upload images'}</span>
+                        </label>
+
+                        {variant.images.length > 0 && (
+                          <div className="mt-3 space-y-2">
+                            <p className="text-xs text-muted-foreground">
+                              {variant.images.length} image(s) - Primary: Image {(variant.primaryImageIndex ?? 0) + 1}
+                            </p>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                              {variant.images.map((img, imgIdx) => (
+                                <div key={imgIdx} className="relative group">
+                                  <div className="aspect-square rounded-md overflow-hidden bg-muted border">
+                                    <img
+                                      src={img}
+                                      alt={`${variant.colorName} ${imgIdx + 1}`}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                  <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity gap-1 p-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const newVariants = [...productForm.colorVariants];
+                                        newVariants[idx].primaryImageIndex = imgIdx;
+                                        setProductForm((p) => ({ ...p, colorVariants: newVariants }));
+                                      }}
+                                      className="text-xs bg-primary text-white px-2 py-1 rounded whitespace-nowrap"
+                                    >
+                                      {(variant.primaryImageIndex ?? 0) === imgIdx ? 'Primary ✓' : 'Set Primary'}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const newVariants = [...productForm.colorVariants];
+                                        newVariants[idx].images = variant.images.filter((_, i) => i !== imgIdx);
+                                        setProductForm((p) => ({ ...p, colorVariants: newVariants }));
+                                      }}
+                                      className="text-xs bg-destructive text-white px-2 py-1 rounded"
+                                    >
+                                      Delete
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setProductForm((p) => ({
+                      ...p,
+                      colorVariants: [
+                        ...p.colorVariants,
+                        {
+                          colorName: '',
+                          colorCode: '#000000',
+                          images: [],
+                          primaryImageIndex: 0,
+                        },
+                      ],
+                    }));
+                  }}
+                  className="mt-4"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Color Variant
+                </Button>
+              </div>
 
               <div className="border-t border-border pt-4">
                 <h3 className="text-sm font-semibold mb-4">Discount</h3>

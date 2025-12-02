@@ -17,6 +17,17 @@ const ProductSchema = new mongoose.Schema(
     attributes: { type: Object, default: {} },
 
     colors: { type: [String], default: [] },
+    colorVariants: {
+      type: [
+        {
+          colorName: { type: String, required: true },
+          colorCode: { type: String, default: '' },
+          images: { type: [String], default: [] },
+          primaryImageIndex: { type: Number, default: 0 },
+        },
+      ],
+      default: [],
+    },
     colorInventory: {
       type: [
         {
@@ -25,6 +36,10 @@ const ProductSchema = new mongoose.Schema(
         },
       ],
       default: [],
+    },
+    colorImages: {
+      type: Object,
+      default: {},
     },
 
     sizes: { type: [String], default: [] },
